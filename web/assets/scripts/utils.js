@@ -22,27 +22,33 @@ function exibirAviso(elementoID, tipoAviso, mensagem) {
                     
     elementoID = "#" + elementoID;
     let tipoAvisoClasse;
-    
-    switch (tipoAviso) {
-        case "sucesso":
+    let avisoMensagem;
+
+    switch (tipoAviso.toUpperCase()) {
+        case "SUCESSO":
             tipoAvisoClasse = "success";
+            avisoMensagem = "Sucesso";
             break;
-        case "aviso":
+        case "AVISO":
             tipoAvisoClasse = "warning";
+            avisoMensagem = "Alerta";
             break;
-        case "erro":
+        case "ERRO":
             tipoAvisoClasse = "danger";
+            avisoMensagem = "Erro";
             break;
-        case "info":
+        case "INFO":
             tipoAvisoClasse = "info";
+            avisoMensagem = "Informação";
             break; 
         default:
             tipoAvisoClasse = "info";
+            avisoMensagem = "Informação";
     }
     
     $(elementoID).attr("class", "alert alert-" + tipoAvisoClasse + " text-center");
     $(elementoID).attr("role", "alert");
-    $(elementoID).html("<strong>" + tipoAviso.toUpperCase() + ":</strong> " + mensagem);
+    $(elementoID).html("<strong>" + avisoMensagem + "!</strong> " + mensagem);
 
 }
 
