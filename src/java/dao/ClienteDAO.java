@@ -21,15 +21,25 @@ public class ClienteDAO {
 
     /* ---------------------------------------------------------------------- */
 
+    public static void encerrarConexao() throws SQLException {
+
+        ClienteDAO.conexao.close();
+
+    }
+
+    /* ---------------------------------------------------------------------- */
+
     public static Cliente buscarPorId(int id) throws SQLException {
 
-        Cliente clnt = new Cliente();
+        Cliente clnt = null;
 
         PreparedStatement pstmt = ClienteDAO.conexao.prepareStatement(BUSCAR_POR_ID);
             pstmt.setInt(1, id);
         ResultSet resultado = pstmt.executeQuery();
         
         if ( resultado.isBeforeFirst() && resultado.next() ) {
+
+            clnt = new Cliente();
             
             clnt.setId(resultado.getInt("id"));
             clnt.setNome(resultado.getString("nome"));

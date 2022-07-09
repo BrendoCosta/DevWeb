@@ -22,6 +22,14 @@ public class ProdutoDAO {
 
     /* ---------------------------------------------------------------------- */
 
+    public static void encerrarConexao() throws SQLException {
+
+        ProdutoDAO.conexao.close();
+
+    }
+
+    /* ---------------------------------------------------------------------- */
+
     public static Produto buscarPorId(int idProduto) throws SQLException {
 
         Produto prod = null;

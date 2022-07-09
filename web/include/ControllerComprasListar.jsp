@@ -2,7 +2,7 @@
 <%
     boolean isComprador = (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.COMPRADOR);
 %>
-<div class="pt-4 pb-4"><h2>Controle de Vendas</h2></div>
+<div class="pt-4 pb-4"><h2>Controle de Compras</h2></div>
 <div class="row g-0 d-flex justify-content-md-start justify-content-center">
     <% if ( isComprador ) { %>
         <div class="row pb-4">
@@ -63,7 +63,7 @@
                                         <button class="btn btn-outline-danger" title="Deletar"><i class="bi bi-x-lg"></i></button>
                                     </a>
                                 </td>
-                            <% } else { %>
+                            <% } else if ( isComprador && !( aux.getIdFuncionario() == (int) request.getSession().getAttribute("usuarioID") ) ) { %>
                                 <td></td>
                                 <td></td>
                             <% } %>
@@ -90,6 +90,16 @@
                     $(this).toggle($(this).text().toLowerCase().indexOf(texto) > -1);
 
                 });
+
+            });
+
+            $(".link-deletar").click(function(e) {
+
+                if (!confirm("Confirmar exclusão?")) {
+
+                    e.preventDefault();
+
+                }
 
             });
 

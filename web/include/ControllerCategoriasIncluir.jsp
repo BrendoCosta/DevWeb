@@ -13,41 +13,5 @@
             <div class="col-md-auto"><input type="submit" class="btn btn-outline-primary" id="btnEnviar" value="Enviar"></div>
         </div>
     </form>
-    <script type="text/javascript">
-
-        $("#formulario").submit(function (e) {
-
-            if (!validaFormCadastro()) {
-
-                event.preventDefault();
-
-            }
-
-        });
-
-        function validaFormCadastro() {
-
-            removerAviso("aviso");
-
-            // Valida Nome da Categoria
-
-            if ( $("#prmNomeCategoria").val().length == 0 ) {
-
-                exibirAviso("aviso", "ERRO", "Nome da categoria não informado!");
-                return false;
-
-            }
-
-            if ( $("#prmNomeCategoria").val().length > 50 ) {
-
-                exibirAviso("aviso", "ERRO", "Nome da categoria excede o tamanho permitido!");
-                return false;
-
-            }
-
-            return true;
-
-        }
-
-    </script>
+    <script type="text/javascript" src="include/FormCategorias.js"></script>
 </div>

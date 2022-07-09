@@ -3,6 +3,7 @@ import app.ServletUtils;
 import app.Mensagem;
 import model.Categoria;
 import dao.CategoriaDAO;
+import model.Funcionario;
 import java.util.ArrayList;
 
 import java.io.*;
@@ -72,29 +73,67 @@ public class ControllerCategorias extends HttpServlet {
 
         boolean alteracao = false;
 
-        // Verifica se o POST se refere a uma alteração
+        try {
 
-        if (request.getParameter("prmId") != null) {
+            // ---------------------------------------------------------------------
 
-            if (!((String)request.getParameter("prmId")).isEmpty()
-                && Integer.parseInt(request.getParameter("prmId")) >= 0) {
+            if ( request.getParameter("prmId") != null ) {
 
-                alteracao = true;
-                cat.setId(Integer.parseInt(request.getParameter("prmId")));
+                if ( request.getParameter("prmId").matches("\\d+")
+                    && request.getParameter("prmId").length() <= 11 ) {
+
+                    cat = catDAO.buscarPorId(Integer.parseInt(request.getParameter("prmId")));
+                    
+                    if (cat != null) {
+
+                        if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.COMPRADOR) {
+
+                            alteracao = true;
+                            cat.setId(Integer.parseInt(request.getParameter("prmId")));
+
+                        } else { throw new Exception("Apenas compradores podem alterar categorias!"); }
+
+                    } else { throw new Exception("Não foi possível localizar a categoria com o ID informado!"); }
+
+                }
 
             }
 
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmNomeCategoria") != null
+                && !request.getParameter("prmNomeCategoria").isEmpty() ) {
+
+                if ( request.getParameter("prmNomeCategoria").length() <= 50 ) {
+
+                    cat.setNomeCategoria(request.getParameter("prmNomeCategoria"));
+
+                } else { throw new Exception("Nome da categoria é inválido!"); }
+
+            } else { throw new Exception("Nome da categoria não foi informado!"); }
+
+        } catch (SQLException e) {
+
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
+
+        } catch (Exception e) {
+
+            Mensagem resMsg = new Mensagem(e.getMessage(), Mensagem.Tipo.ERRO);
+            request.setAttribute("resMensagem", resMsg);
+            this.doGet(request, response);
+
         }
 
-        // Dados da categoria
+        // Inclusão / Alteração
 
-        cat.setNomeCategoria( (String) request.getParameter("prmNomeCategoria") );
+        try {
 
-        if (alteracao) {
-
-            // Altera categoria
-
-            try {
+            if (alteracao) {
 
                 if ( catDAO.alterar(cat) ) {
 
@@ -102,55 +141,36 @@ public class ControllerCategorias extends HttpServlet {
                     request.setAttribute("resMensagem", resMsg);
                     this.doGet(request, response);
 
-                } else {
+                } else { throw new Exception("Não foi possível alterar os dados da categoria!"); }
 
-                    Mensagem resMsg = new Mensagem("Falha ao alterar os dados da categoria!", Mensagem.Tipo.ERRO);
-                    request.setAttribute("resMensagem", resMsg);
-                    this.doGet(request, response);
-
-                }
-
-            } catch (SQLException excecao) {
-
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível alterar os dados da categoria no banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
-
-            }
-
-        } else {
-
-            // Inclui categoria
-
-            try {
+            } else {
 
                 if ( catDAO.inserir(cat) ) {
 
-                    Mensagem resMsg = new Mensagem("Dados da categoria incluídos!", Mensagem.Tipo.SUCESSO);
+                    Mensagem resMsg = new Mensagem("Categoria cadastrada!", Mensagem.Tipo.SUCESSO);
                     request.setAttribute("resMensagem", resMsg);
                     this.doGet(request, response);
 
-                } else {
-
-                    Mensagem resMsg = new Mensagem("Falha ao incluir os dados da categoria!", Mensagem.Tipo.ERRO);
-                    request.setAttribute("resMensagem", resMsg);
-                    this.doGet(request, response);
-
-                }
-
-            } catch (SQLException excecao) {
-
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível incluir os dados da categoria no banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
+                } else { throw new Exception("Não foi possível cadastrar a categoria!"); }
 
             }
+            
+            catDAO.encerrarConexao();
+
+        } catch (SQLException e) {
+
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
+
+        } catch (Exception e) {
+
+            Mensagem resMsg = new Mensagem(e.getMessage(), Mensagem.Tipo.ERRO);
+            request.setAttribute("resMensagem", resMsg);
+            this.doGet(request, response);
 
         }
 
@@ -174,59 +194,53 @@ public class ControllerCategorias extends HttpServlet {
     throws ServletException, IOException {
 
         request.setAttribute("acao", "alterar");
-        
-        Integer id = null;
-        
-        if (!((String) request.getParameter("id") == null)) {
 
-            id = Integer.parseInt( (String) request.getParameter("id") );
+        try {
 
-        }
+            if ( request.getParameter("id") != null
+                && !request.getParameter("id").isEmpty() ) {
 
-        if (id != null) {
+                if ( request.getParameter("id").matches("\\d+") ) {
 
-            try {
+                    CategoriaDAO catDAO = new CategoriaDAO();
+                    Categoria cat = catDAO.buscarPorId(Integer.parseInt(request.getParameter("id")));
+                    catDAO.encerrarConexao();
 
-                Categoria cat = null;
-                CategoriaDAO catDAO = new CategoriaDAO();
-                
-                cat = catDAO.buscarPorId(id);
+                    if (cat != null) {
 
-                if (cat != null) {
-                    
-                    request.setAttribute("categoria", cat);
+                        if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.COMPRADOR) {
 
-                    RequestDispatcher rd = request.getRequestDispatcher("/ControllerCategorias.jsp");  
-                    rd.forward(request, response);
-                    
-                } else {
+                            request.setAttribute("categoria", cat);
 
-                    ServletUtils.mensagem(
-                        "/ControllerVendas?acao=listar",
-                        "Não foi possível localizar a categoria com o ID informado!",
-                        Mensagem.Tipo.ERRO,
-                        request,
-                        response
-                    );
+                            RequestDispatcher rd = request.getRequestDispatcher("/ControllerCategorias.jsp");  
+                            rd.forward(request, response);
 
-                }
+                        } else { throw new Exception("Apenas compradores podem alterar categorias!"); }
+                        
+                    } else { throw new Exception("Não foi possível localizar a categoria informado!"); }
 
-            } catch (SQLException excecao) {
+                } else { throw new Exception("ID da categoria  informado não é numérico!"); }
 
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível consultar o banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
+            } else { throw new Exception("ID da categoria  não foi informado!"); }
 
-            }
+        } catch (SQLException e) {
 
-        } else {
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
 
-            Mensagem resMsg = new Mensagem("ID da categoria a ser alterada não foi informado!", Mensagem.Tipo.ERRO);
-            request.setAttribute("resMensagem", resMsg);
-            this.doGet(request, response);
+        } catch (Exception e) {
+
+            ServletUtils.mensagem(
+                "/ControllerCategorias?acao=listar",
+                e.getMessage(),
+                Mensagem.Tipo.ERRO,
+                request,
+                response
+            );
 
         }
 
@@ -237,76 +251,58 @@ public class ControllerCategorias extends HttpServlet {
     private void excluir(HttpServletRequest request, HttpServletResponse response) 
     throws ServletException, IOException {
 
-        int id = -1;
+        request.setAttribute("acao", "excluir");
 
-        if (request.getParameter("id") != null) {
+        try {
 
-            id = Integer.parseInt(request.getParameter("id"));
+            if ( request.getParameter("id") != null ) {
 
-        }
+                if ( request.getParameter("id").matches("\\d+") ) {
 
-        if (id != -1) {
+                    int id = Integer.parseInt(request.getParameter("id"));
+                    CategoriaDAO catDAO = new CategoriaDAO();
+                    Categoria cat = catDAO.buscarPorId(id);
+                    
+                    if (cat != null) {
 
-            Categoria cat = null;
-            CategoriaDAO catDAO = null;
+                        if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.COMPRADOR) {
 
-            try {
+                            if ( catDAO.deletar(id) ) {
 
-                catDAO = new CategoriaDAO();
-                cat = catDAO.buscarPorId(id);
+                                catDAO.encerrarConexao();
 
-                if ( cat != null ) {
+                                ServletUtils.mensagem(
+                                    "/ControllerCategorias?acao=listar",
+                                    "Categoria excluída!",
+                                    Mensagem.Tipo.SUCESSO,
+                                    request,
+                                    response
+                                );
 
-                    if ( catDAO.deletar(id) ) {
+                            } else { throw new Exception("Não foi possível excluir a categoria informada!"); }
+                            
+                        } else { throw new Exception("Apenas compradores podem excluir categorias!"); }
 
-                        ServletUtils.mensagem(
-                            "/ControllerCategorias?acao=listar",
-                            "Categoria excluída!",
-                            Mensagem.Tipo.SUCESSO,
-                            request,
-                            response
-                        );
+                    } else { throw new Exception("Não foi possível localizar a categoria informada!"); }
 
-                    } else {
+                } else { throw new Exception("ID da categoria informado não é numérico!"); }
 
-                        ServletUtils.mensagem(
-                            "/ControllerCategorias?acao=listar",
-                            "Não foi possível excluir o fornecedor!",
-                            Mensagem.Tipo.ERRO,
-                            request,
-                            response
-                        );
+            } else { throw new Exception("ID da categoria não foi informado!"); }
 
-                    }
+        } catch (SQLException e) {
 
-                } else {
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
 
-                    ServletUtils.mensagem(
-                        "/ControllerCategorias?acao=listar",
-                        "Fornecedor inexistente!",
-                        Mensagem.Tipo.ERRO,
-                        request,
-                        response
-                    );
-
-                }
-
-            } catch (SQLException excecao) {
-
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível consultar o banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
-
-            }
-
-        } else {
+        } catch (Exception e) {
 
             ServletUtils.mensagem(
                 "/ControllerCategorias?acao=listar",
-                "ID do fornecedor a ser excluído não foi informado!",
+                e.getMessage(),
                 Mensagem.Tipo.ERRO,
                 request,
                 response
@@ -330,6 +326,7 @@ public class ControllerCategorias extends HttpServlet {
 
             catDAO = new CategoriaDAO();
             lista = catDAO.listar();
+            catDAO.encerrarConexao();
 
         } catch (SQLException excecao) {
 

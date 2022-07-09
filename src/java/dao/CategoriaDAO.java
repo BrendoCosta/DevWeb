@@ -20,6 +20,14 @@ public class CategoriaDAO {
 
     /* ---------------------------------------------------------------------- */
 
+    public static void encerrarConexao() throws SQLException {
+
+        CategoriaDAO.conexao.close();
+
+    }
+
+    /* ---------------------------------------------------------------------- */
+
     public static Categoria buscarPorId(int id) throws SQLException {
 
         Categoria cat = null;

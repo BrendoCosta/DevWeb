@@ -25,8 +25,9 @@
             <tr>
                 <th scope="col">#</th>
                 <th scope="col">ID da Venda</th>
-                <th scope="col">ID do Cliente</th>
                 <th scope="col">ID do Produto</th>
+                <th scope="col">ID do Cliente</th>
+                <th scope="col">ID do Vendedor</th>
                 <th scope="col">Quantidade Vendida</th>
                 <th scope="col">Valor Total</th>
                 <th scope="col">Data</th>
@@ -47,24 +48,26 @@
                         <tr>
                             <th scope="row"><%= i + 1 %></th>
                             <td><%= aux.getId() %></td>
-                            <td><%= aux.getIdCliente() %></td>
                             <td><%= aux.getIdProduto() %></td>
+                            <td><%= aux.getIdCliente() %></td>
+                            <td><%= aux.getIdFuncionario() %></td>
                             <td><%= aux.getQuantidadeVenda() %> unidade(s)</td>
                             <td><%= aux.getValorVenda() %> R$</td>
                             <td class="dataVenda"><%= aux.getDataVenda() %></td>
-                            <% if ( isVendedor ) { %>
+                            <% if ( isVendedor && ( aux.getIdFuncionario() == (int) request.getSession().getAttribute("usuarioID") ) ) { %>
                                 <td>
                                     <a href="?acao=alterar&id=<%= aux.getId() %>">
                                         <button class="btn btn-outline-primary" title="Alterar"><i class="bi bi-pencil-fill"></i></button>
                                     </a>
                                 </td>
-                            <% } %>
-                            <% if ( isVendedor ) { %>
                                 <td>
                                     <a class="link-deletar" href="?acao=excluir&id=<%= aux.getId() %>">
                                         <button class="btn btn-outline-danger" title="Deletar"><i class="bi bi-x-lg"></i></button>
                                     </a>
                                 </td>
+                            <% } else if ( isVendedor && !( aux.getIdFuncionario() == (int) request.getSession().getAttribute("usuarioID") ) ) { %>
+                                <td></td>
+                                <td></td>
                             <% } %>
                         </tr>
                         <%
@@ -89,6 +92,16 @@
                     $(this).toggle($(this).text().toLowerCase().indexOf(texto) > -1);
 
                 });
+
+            });
+
+            $(".link-deletar").click(function(e) {
+
+                if (!confirm("Confirmar exclusão?")) {
+
+                    e.preventDefault();
+
+                }
 
             });
 

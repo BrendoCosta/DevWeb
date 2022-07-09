@@ -39,7 +39,7 @@
             </div>
         </div>
         <jsp:include page="include/scripts.html"/>
-        <script>
+        <script type="text/javascript">
 
             <%
                 Mensagem msg = (Mensagem) request.getAttribute("resMensagem");
@@ -50,19 +50,6 @@
                 }
             %>
 
-            $(document).ready(function () {
-
-                $(".link-deletar").click(function(e) {
-
-                    if (!confirm("Confirmar exclusão?")) {
-
-                        e.preventDefault();
-
-                    }
-
-                })
-
-            });
         </script>
     </body>
 </html>

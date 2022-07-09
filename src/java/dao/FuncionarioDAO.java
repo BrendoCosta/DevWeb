@@ -21,6 +21,14 @@ public class FuncionarioDAO {
 
     /* ---------------------------------------------------------------------- */
 
+    public static void encerrarConexao() throws SQLException {
+
+        FuncionarioDAO.conexao.close();
+
+    }
+
+    /* ---------------------------------------------------------------------- */
+
     public static Funcionario buscar(int id) throws SQLException {
 
         Funcionario func = null;

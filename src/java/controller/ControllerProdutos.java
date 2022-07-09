@@ -3,6 +3,7 @@ import app.ServletUtils;
 import app.Mensagem;
 import model.Produto;
 import dao.ProdutoDAO;
+import model.Funcionario;
 import java.util.ArrayList;
 
 import java.io.*;
@@ -57,76 +58,93 @@ public class ControllerProdutos extends HttpServlet {
 
         if (!ServletUtils.validaSessao(request, response)) { return; }
 
-        Produto prod = new Produto(); 
+        ProdutoDAO prodDAO = new ProdutoDAO();
+        Produto prod = new Produto();
+
         boolean alteracao = false;
 
-        // Verifica se o POST se refere a uma alteração
+        try {
 
-        if (request.getParameter("prmId") != null) {
+            // ---------------------------------------------------------------------
 
-            if (!((String)request.getParameter("prmId")).isEmpty()
-                && Integer.parseInt(request.getParameter("prmId")) >= 0) {
+            if ( request.getParameter("prmId") != null ) {
 
-                alteracao = true;
-                prod.setId(Integer.parseInt(request.getParameter("prmId")));
+                if ( request.getParameter("prmId").matches("\\d+")
+                    && request.getParameter("prmId").length() <= 11 ) {
 
-            }
+                    prod = prodDAO.buscarPorId(Integer.parseInt(request.getParameter("prmId")));
+                    
+                    if (prod != null) {
+
+                        if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.COMPRADOR) {
+
+                            alteracao = true;
+                            prod.setId(Integer.parseInt(request.getParameter("prmId")));
+
+                        } else { throw new Exception("Apenas compradores podem alterar produtos!"); }
+
+                    } else { throw new Exception("Não foi possível localizar o produto com o ID informado!"); }
+
+                } else { throw new Exception("ID do produto é inválido!"); }
+
+            } else { throw new Exception("É obrigatório informar o ID do produto!"); }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmLiberadoVenda") != null ) {
+
+                if ( request.getParameter("prmLiberadoVenda").equals("S") 
+                    || request.getParameter("prmLiberadoVenda").equals("N") ) {
+
+                    prod.setLiberadoVenda(Produto.Liberado.valueOf(request.getParameter("prmLiberadoVenda")));
+
+                } else { throw new Exception("Opção de liberação de venda é inválida!"); }
+
+            } else { throw new Exception("Opção de liberação de venda não foi informada!"); }
+
+        } catch (SQLException e) {
+
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
+
+        } catch (Exception e) {
+
+            Mensagem resMsg = new Mensagem(e.getMessage(), Mensagem.Tipo.ERRO);
+            request.setAttribute("resMensagem", resMsg);
+            this.doGet(request, response);
 
         }
 
-        // Dados do produto
+        // Atleração
 
-        prod.setLiberadoVenda( Produto.Liberado.valueOf((String) request.getParameter("prmLiberadoVenda")) );
+        try {
 
-        if (alteracao) {
+            if ( prodDAO.alterar(prod) ) {
 
-            // Altera produto
+                Mensagem resMsg = new Mensagem("Dados do produto alterados!", Mensagem.Tipo.SUCESSO);
+                request.setAttribute("resMensagem", resMsg);
+                this.doGet(request, response);
 
-            try {
+            } else { throw new Exception("Não foi possível alterar os dados do produto!"); }
 
-                ProdutoDAO prodDAO = new ProdutoDAO();
-                Produto aux = prodDAO.buscarPorId(prod.getId());
+            prodDAO.encerrarConexao();
 
-                if ( aux != null ) {
+        } catch (SQLException e) {
 
-                    aux.setLiberadoVenda(prod.getLiberadoVenda());
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
 
-                    if ( prodDAO.alterar(aux) ) {
+        } catch (Exception e) {
 
-                        Mensagem resMsg = new Mensagem("Dados do produto alterados!", Mensagem.Tipo.SUCESSO);
-                        request.setAttribute("resMensagem", resMsg);
-                        this.doGet(request, response);
-
-                    } else {
-
-                        Mensagem resMsg = new Mensagem("Falha ao alterar os dados do produto!", Mensagem.Tipo.ERRO);
-                        request.setAttribute("resMensagem", resMsg);
-                        this.doGet(request, response);
-
-                    }
-
-                } else {
-
-                    Mensagem resMsg = new Mensagem("Não foi possível localizar o produto com o ID especificado!", Mensagem.Tipo.ERRO);
-                    request.setAttribute("resMensagem", resMsg);
-                    this.doGet(request, response);
-
-                }
-
-            } catch (SQLException excecao) {
-
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível alterar os dados do produto no banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
-
-            }
-
-        } else {
-
-            Mensagem resMsg = new Mensagem("ID do produto a ser alterado não foi especificado!", Mensagem.Tipo.ERRO);
+            Mensagem resMsg = new Mensagem(e.getMessage(), Mensagem.Tipo.ERRO);
             request.setAttribute("resMensagem", resMsg);
             this.doGet(request, response);
 
@@ -140,59 +158,49 @@ public class ControllerProdutos extends HttpServlet {
     throws ServletException, IOException {
 
         request.setAttribute("acao", "alterar");
-        
-        Integer id = null;
-        
-        if (!((String) request.getParameter("id") == null)) {
 
-            id = Integer.parseInt( (String) request.getParameter("id") );
+        try {
 
-        }
+            if ( request.getParameter("id") != null
+                && !request.getParameter("id").isEmpty() ) {
 
-        if (id != null) {
+                if ( request.getParameter("id").matches("\\d+") ) {
 
-            try {
+                    ProdutoDAO prodDAO = new ProdutoDAO();
+                    Produto prod = prodDAO.buscarPorId(Integer.parseInt(request.getParameter("id")));
+                    prodDAO.encerrarConexao();
 
-                Produto prod = null;
-                ProdutoDAO prodDAO = new ProdutoDAO();
-                
-                prod = prodDAO.buscarPorId(id);
+                    if (prod != null) {
+                        
+                        request.setAttribute("produto", prod);
 
-                if (prod != null) {
-                    
-                    request.setAttribute("produto", prod);
+                        RequestDispatcher rd = request.getRequestDispatcher("/ControllerProdutos.jsp");  
+                        rd.forward(request, response);
+                        
+                    } else { throw new Exception("Não foi possível localizar o produto informado!"); }
 
-                    RequestDispatcher rd = request.getRequestDispatcher("/ControllerProdutos.jsp");  
-                    rd.forward(request, response);
-                    
-                } else {
+                } else { throw new Exception("ID do produto informado não é numérico!"); }
 
-                    ServletUtils.mensagem(
-                        "/ControllerProdutos?acao=listar",
-                        "Não foi possível localizar o produto com o ID informado!",
-                        Mensagem.Tipo.ERRO,
-                        request,
-                        response
-                    );
+            } else { throw new Exception("ID do produto não foi informado!"); }
 
-                }
+        } catch (SQLException e) {
 
-            } catch (SQLException excecao) {
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
 
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível consultar o banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
+        } catch (Exception e) {
 
-            }
-
-        } else {
-
-            Mensagem resMsg = new Mensagem("ID do produto a ser alterado não foi informado!", Mensagem.Tipo.ERRO);
-            request.setAttribute("resMensagem", resMsg);
-            this.doGet(request, response);
+            ServletUtils.mensagem(
+                "/ControllerProdutos?acao=listar",
+                e.getMessage(),
+                Mensagem.Tipo.ERRO,
+                request,
+                response
+            );
 
         }
 
@@ -212,6 +220,7 @@ public class ControllerProdutos extends HttpServlet {
 
             prodDAO = new ProdutoDAO();
             lista = prodDAO.listar();
+            prodDAO.encerrarConexao();
 
         } catch (SQLException excecao) {
 

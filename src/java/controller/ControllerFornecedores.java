@@ -3,6 +3,8 @@ import app.ServletUtils;
 import app.Mensagem;
 import model.Fornecedor;
 import dao.FornecedorDAO;
+import model.Funcionario;
+import dao.CompraDAO;
 import java.util.ArrayList;
 
 import java.io.*;
@@ -72,93 +74,208 @@ public class ControllerFornecedores extends HttpServlet {
 
         boolean alteracao = false;
 
-        // Verifica se o POST se refere a uma alteração
+        try {
 
-        if (request.getParameter("prmId") != null) {
+            // ---------------------------------------------------------------------
 
-            if (!((String)request.getParameter("prmId")).isEmpty()
-                && Integer.parseInt(request.getParameter("prmId")) >= 0) {
+            if ( request.getParameter("prmId") != null ) {
 
-                alteracao = true;
-                forn.setId(Integer.parseInt(request.getParameter("prmId")));
+                if ( request.getParameter("prmId").matches("\\d+")
+                    && request.getParameter("prmId").length() <= 11 ) {
+
+                    forn = fornDAO.buscarPorId(Integer.parseInt(request.getParameter("prmId")));
+                    
+                    if (forn != null) {
+
+                        if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.COMPRADOR) {
+
+                            alteracao = true;
+                            forn.setId(Integer.parseInt(request.getParameter("prmId")));
+
+                        } else { throw new Exception("Apenas compradores podem alterar fornecedores!"); }
+
+                    } else { throw new Exception("Não foi possível localizar o fornecedor com o ID informado!"); }
+
+                }
 
             }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmRazaoSocial") != null
+                && !request.getParameter("prmRazaoSocial").isEmpty() ) {
+
+                if ( request.getParameter("prmRazaoSocial").length() <= 50 ) {
+
+                    forn.setRazaoSocial(request.getParameter("prmRazaoSocial"));
+
+                } else { throw new Exception("Razaõ social é inválida!"); }
+
+            } else { throw new Exception("Razaõ social não foi informada!"); }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmCnpj") != null
+                && !request.getParameter("prmCnpj").isEmpty() ) {
+
+                if ( request.getParameter("prmCnpj").length() <= 18 ) {
+
+                    forn.setCnpj(request.getParameter("prmCnpj"));
+
+                } else { throw new Exception("CNPJ é inválido!"); }
+
+            } else { throw new Exception("CNPJ não foi informado!"); }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmEndereco") != null
+                && !request.getParameter("prmEndereco").isEmpty() ) {
+
+                if ( request.getParameter("prmEndereco").length() <= 50 ) {
+
+                    forn.setEndereco(request.getParameter("prmEndereco"));
+
+                } else { throw new Exception("Endereço é inválido!"); }
+
+            } else { throw new Exception("Endereço não foi informado!"); }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmBairro") != null
+                && !request.getParameter("prmBairro").isEmpty() ) {
+
+                if ( request.getParameter("prmBairro").length() <= 50 ) {
+
+                    forn.setBairro(request.getParameter("prmBairro"));
+
+                } else { throw new Exception("Bairro é inválido!"); }
+
+            } else { throw new Exception("Bairro não foi informado!"); }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmCidade") != null
+                && !request.getParameter("prmCidade").isEmpty() ) {
+
+                if ( request.getParameter("prmCidade").length() <= 50 ) {
+
+                    forn.setCidade(request.getParameter("prmCidade"));
+
+                } else { throw new Exception("Cidade é inválida!"); }
+
+            } else { throw new Exception("Cidade não foi informada!"); }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmUf") != null
+                && !request.getParameter("prmUf").isEmpty() ) {
+
+                if ( request.getParameter("prmUf").length() == 2 ) {
+
+                    forn.setUf(request.getParameter("prmUf"));
+
+                } else { throw new Exception("UF é inválida!"); }
+
+            } else { throw new Exception("UF não foi informada!"); }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmCep") != null
+                && !request.getParameter("prmCep").isEmpty() ) {
+
+                if ( request.getParameter("prmCep").length() == 9 ) {
+
+                    forn.setCep(request.getParameter("prmCep"));
+
+                } else { throw new Exception("CEP é inválido!"); }
+
+            } else { throw new Exception("CEP não foi informado!"); }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmTelefone") != null
+                && !request.getParameter("prmTelefone").isEmpty() ) {
+
+                if ( request.getParameter("prmTelefone").length() <= 20 ) {
+
+                    forn.setTelefone(request.getParameter("prmTelefone"));
+
+                } else { throw new Exception("Telefone é inválido!"); }
+
+            } else { throw new Exception("Telefone não foi informado!"); }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmEmail") != null
+                && !request.getParameter("prmEmail").isEmpty() ) {
+
+                if ( request.getParameter("prmEmail").length() <= 50 ) {
+
+                    forn.setEmail(request.getParameter("prmEmail"));
+
+                } else { throw new Exception("E-mail é inválido!"); }
+
+            } else { throw new Exception("E-mail não foi informado!"); }
+
+        } catch (SQLException e) {
+
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
+
+        } catch (Exception e) {
+
+            Mensagem resMsg = new Mensagem(e.getMessage(), Mensagem.Tipo.ERRO);
+            request.setAttribute("resMensagem", resMsg);
+            this.doGet(request, response);
 
         }
 
-        // Dados do fornecedor
+        // Inclusão / Alteração
 
-        forn.setRazaoSocial( (String) request.getParameter("prmRazaoSocial") );
-        forn.setCnpj( (String) request.getParameter("prmCnpj") );
-        forn.setEndereco( (String) request.getParameter("prmEndereco") );
-        forn.setBairro( (String) request.getParameter("prmBairro") );
-        forn.setCidade( (String) request.getParameter("prmCidade") );
-        forn.setUf( (String) request.getParameter("prmUf") );
-        forn.setCep( (String) request.getParameter("prmCep") );
-        forn.setTelefone( (String) request.getParameter("prmTelefone") );
-        forn.setEmail( (String) request.getParameter("prmEmail") );
+        try {
 
-        if (alteracao) {
-
-            // Altera fornecedor
-
-            try {
+            if (alteracao) {
 
                 if ( fornDAO.alterar(forn) ) {
 
-                    Mensagem resMsg = new Mensagem("Dados do fornecedor alterados!", Mensagem.Tipo.SUCESSO);
+                    Mensagem resMsg = new Mensagem("Fornecedor alterado!", Mensagem.Tipo.SUCESSO);
                     request.setAttribute("resMensagem", resMsg);
                     this.doGet(request, response);
 
-                } else {
+                } else { throw new Exception("Não foi possível alterar os dados do fornecedor!"); }
 
-                    Mensagem resMsg = new Mensagem("Falha ao alterar os dados do fornecedor!", Mensagem.Tipo.ERRO);
-                    request.setAttribute("resMensagem", resMsg);
-                    this.doGet(request, response);
-
-                }
-
-            } catch (SQLException excecao) {
-
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível alterar os dados do fornecedor no banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
-
-            }
-
-        } else {
-
-            // Inclui fornecedor
-
-            try {
+            } else {
 
                 if ( fornDAO.inserir(forn) ) {
 
-                    Mensagem resMsg = new Mensagem("Dados do fornecedor incluídos!", Mensagem.Tipo.SUCESSO);
+                    Mensagem resMsg = new Mensagem("Fornecedor cadastrado!", Mensagem.Tipo.SUCESSO);
                     request.setAttribute("resMensagem", resMsg);
                     this.doGet(request, response);
 
-                } else {
-
-                    Mensagem resMsg = new Mensagem("Falha ao incluir os dados do fornecedor!", Mensagem.Tipo.ERRO);
-                    request.setAttribute("resMensagem", resMsg);
-                    this.doGet(request, response);
-
-                }
-
-            } catch (SQLException excecao) {
-
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível incluir os dados do fornecedor no banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
+                } else { throw new Exception("Não foi possível cadastrar o fornecedor!"); }
 
             }
+
+            fornDAO.encerrarConexao();
+
+        } catch (SQLException e) {
+
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
+
+        } catch (Exception e) {
+
+            Mensagem resMsg = new Mensagem(e.getMessage(), Mensagem.Tipo.ERRO);
+            request.setAttribute("resMensagem", resMsg);
+            this.doGet(request, response);
 
         }
 
@@ -182,59 +299,54 @@ public class ControllerFornecedores extends HttpServlet {
     throws ServletException, IOException {
 
         request.setAttribute("acao", "alterar");
-        
-        Integer id = null;
-        
-        if (!((String) request.getParameter("id") == null)) {
 
-            id = Integer.parseInt( (String) request.getParameter("id") );
+        try {
 
-        }
+            if ( request.getParameter("id") != null
+                && !request.getParameter("id").isEmpty() ) {
 
-        if (id != null) {
+                if ( request.getParameter("id").matches("\\d+") ) {
 
-            try {
+                    FornecedorDAO fornDAO = new FornecedorDAO();
+                    Fornecedor forn = fornDAO.buscarPorId(Integer.parseInt(request.getParameter("id")));
 
-                Fornecedor forn = null;
-                FornecedorDAO fornDAO = new FornecedorDAO();
-                
-                forn = fornDAO.buscarPorId(id);
+                    if (forn != null) {
 
-                if (forn != null) {
-                    
-                    request.setAttribute("fornecedor", forn);
+                        if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.COMPRADOR) {
 
-                    RequestDispatcher rd = request.getRequestDispatcher("/ControllerFornecedores.jsp");  
-                    rd.forward(request, response);
-                    
-                } else {
+                            request.setAttribute("fornecedor", forn);
 
-                    ServletUtils.mensagem(
-                        "/ControllerVendas?acao=listar",
-                        "Não foi possível localizar o fornecedor com o ID informado!",
-                        Mensagem.Tipo.ERRO,
-                        request,
-                        response
-                    );
+                            RequestDispatcher rd = request.getRequestDispatcher("/ControllerFornecedores.jsp");  
+                            rd.forward(request, response);
 
-                }
+                        } else { throw new Exception("Apenas compradores podem alterar fornecedores!"); }
+                        
+                    } else { throw new Exception("Não foi possível localizar o fornecedor informado!"); }
 
-            } catch (SQLException excecao) {
+                    fornDAO.encerrarConexao();
 
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível consultar o banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
+                } else { throw new Exception("ID do fornecedor informado não é numérico!"); }
 
-            }
+            } else { throw new Exception("ID do fornecedor não foi informado!"); }
 
-        } else {
+        } catch (SQLException e) {
 
-            Mensagem resMsg = new Mensagem("ID do fornecedor a ser alterado não foi informado!", Mensagem.Tipo.ERRO);
-            request.setAttribute("resMensagem", resMsg);
-            this.doGet(request, response);
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
+
+        } catch (Exception e) {
+
+            ServletUtils.mensagem(
+                "/ControllerFornecedores?acao=listar",
+                e.getMessage(),
+                Mensagem.Tipo.ERRO,
+                request,
+                response
+            );
 
         }
 
@@ -245,76 +357,64 @@ public class ControllerFornecedores extends HttpServlet {
     private void excluir(HttpServletRequest request, HttpServletResponse response) 
     throws ServletException, IOException {
 
-        int id = -1;
+        request.setAttribute("acao", "excluir");
 
-        if (request.getParameter("id") != null) {
+        try {
 
-            id = Integer.parseInt(request.getParameter("id"));
+            if ( request.getParameter("id") != null ) {
 
-        }
+                if ( request.getParameter("id").matches("\\d+") ) {
 
-        if (id != -1) {
+                    int id = Integer.parseInt(request.getParameter("id"));
+                    FornecedorDAO fornDAO = new FornecedorDAO();
+                    Fornecedor forn = fornDAO.buscarPorId(id);
+                    CompraDAO compDAO = new CompraDAO();
+                    
+                    if (forn != null) {
 
-            Fornecedor forn = null;
-            FornecedorDAO fornDAO = null;
+                        if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.COMPRADOR) {
 
-            try {
+                            if (compDAO.listarPorFornecedor(forn.getId()).size() == 0) {
 
-                fornDAO = new FornecedorDAO();
-                forn = fornDAO.buscarPorId(id);
+                                if ( fornDAO.deletar(id) ) {
 
-                if ( forn != null ) {
+                                    ServletUtils.mensagem(
+                                        "/ControllerFornecedores?acao=listar",
+                                        "Fornecedor excluído!",
+                                        Mensagem.Tipo.SUCESSO,
+                                        request,
+                                        response
+                                    );
 
-                    if ( fornDAO.deletar(id) ) {
+                                } else { throw new Exception("Não foi possível excluir o fornecedor informado!"); }
 
-                        ServletUtils.mensagem(
-                            "/ControllerFornecedores?acao=listar",
-                            "Fornecedor excluído!",
-                            Mensagem.Tipo.SUCESSO,
-                            request,
-                            response
-                        );
+                            } else { throw new Exception("Não foi possível excluir o fornecedor informado pois há compras cadastradas para ele!"); }
+                            
+                        } else { throw new Exception("Apenas compradores podem excluir fornecedores!"); }
 
-                    } else {
+                    } else { throw new Exception("Não foi possível localizar o fornecedor informado!"); }
 
-                        ServletUtils.mensagem(
-                            "/ControllerFornecedores?acao=listar",
-                            "Não foi possível excluir o fornecedor!",
-                            Mensagem.Tipo.ERRO,
-                            request,
-                            response
-                        );
+                    fornDAO.encerrarConexao();
+                    compDAO.encerrarConexao();
 
-                    }
+                } else { throw new Exception("ID do fornecedor informado não é numérico!"); }
 
-                } else {
+            } else { throw new Exception("ID do fornecedor não foi informado!"); }
 
-                    ServletUtils.mensagem(
-                        "/ControllerFornecedores?acao=listar",
-                        "Fornecedor inexistente!",
-                        Mensagem.Tipo.ERRO,
-                        request,
-                        response
-                    );
+        } catch (SQLException e) {
 
-                }
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
 
-            } catch (SQLException excecao) {
-
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível consultar o banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
-
-            }
-
-        } else {
+        } catch (Exception e) {
 
             ServletUtils.mensagem(
                 "/ControllerFornecedores?acao=listar",
-                "ID do fornecedor a ser excluído não foi informado!",
+                e.getMessage(),
                 Mensagem.Tipo.ERRO,
                 request,
                 response
@@ -338,6 +438,7 @@ public class ControllerFornecedores extends HttpServlet {
 
             fornDAO = new FornecedorDAO();
             lista = fornDAO.listar();
+            fornDAO.encerrarConexao();
 
         } catch (SQLException excecao) {
 

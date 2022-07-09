@@ -14,12 +14,10 @@ public class Area extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
     throws ServletException, IOException {
 
-        if (ServletUtils.validaSessao(request, response)) {
+        if (!ServletUtils.validaSessao(request, response)) { return; }
 
-            RequestDispatcher rd = request.getRequestDispatcher("/Area.jsp");  
-            rd.forward(request, response);
-
-        }
+        RequestDispatcher rd = request.getRequestDispatcher("/Area.jsp");  
+        rd.forward(request, response);
 
     }
 

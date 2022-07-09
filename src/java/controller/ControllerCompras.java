@@ -89,9 +89,11 @@ public class ControllerCompras extends HttpServlet {
 
             // ---------------------------------------------------------------------
 
-            if ( request.getParameter("prmId") != null ) {
+            if ( request.getParameter("prmId") != null
+                && !request.getParameter("prmId").isEmpty() ) {
 
-                if ( request.getParameter("prmId").matches("\\d+") ) {
+                if ( request.getParameter("prmId").matches("\\d+")
+                    && request.getParameter("prmId").length() <= 11 ) {
 
                     comp = compDAO.buscarPorId(Integer.parseInt(request.getParameter("prmId")));
                     
@@ -99,115 +101,89 @@ public class ControllerCompras extends HttpServlet {
 
                         alteracao = true;
 
-                    } else {
+                    } else { throw new Exception("Não foi possível localizar a compra com o ID informado!"); }
 
-                        throw new Exception("Não foi possível localizar a compra com o ID informado!");
-
-                    }
-
-                }
+                } else { throw new Exception("ID da compra é inválido!"); }
 
             }
 
             // ---------------------------------------------------------------------
 
-            if ( request.getParameter("prmIdProduto") != null ) {
+            if ( request.getParameter("prmIdProduto") != null
+                && !request.getParameter("prmIdProduto").isEmpty() ) {
 
-                if ( request.getParameter("prmIdProduto").matches("\\d+") ) {
+                if ( request.getParameter("prmIdProduto").matches("\\d+")
+                    && request.getParameter("prmIdProduto").length() <= 11 ) {
 
                     comp.setIdProduto(Integer.parseInt(request.getParameter("prmIdProduto")));
 
-                } else {
+                } else { throw new Exception("ID do produto é inválido!"); }
 
-                    throw new Exception("ID do produto não é numérico!");
-
-                }
-
-            } else {
-
-                throw new Exception("ID do produto não foi informado!");
-
-            }
+            } else { throw new Exception("ID do produto não foi informado!"); }
 
             // ---------------------------------------------------------------------
 
-            if ( request.getParameter("prmValorCompra") != null ) {
+            if ( request.getParameter("prmValorCompra") != null
+                && !request.getParameter("prmValorCompra").isEmpty() ) {
 
-                if ( request.getParameter("prmValorCompra").matches("\\d+") ) {
+                if ( request.getParameter("prmValorCompra").matches("\\d+")
+                    && request.getParameter("prmValorCompra").length() <= 11 ) {
 
                     comp.setValorCompra(Integer.parseInt(request.getParameter("prmValorCompra")));
 
-                } else {
+                } else { throw new Exception("Valor informado é inválido!"); }
 
-                    throw new Exception("Valor informado não é numérico!");
-
-                }
-
-            } else {
-
-                throw new Exception("Valor não foi informado!");
-
-            }
+            } else { throw new Exception("Valor não foi informado!"); }
 
             // ---------------------------------------------------------------------
 
-            if ( request.getParameter("prmQuantidadeCompra") != null ) {
+            if ( request.getParameter("prmQuantidadeCompra") != null
+                && !request.getParameter("prmQuantidadeCompra").isEmpty() ) {
 
-                if ( request.getParameter("prmQuantidadeCompra").matches("\\d+") ) {
+                if ( request.getParameter("prmQuantidadeCompra").matches("\\d+")
+                    && request.getParameter("prmQuantidadeCompra").length() <= 11 ) {
 
                     comp.setQuantidadeCompra(Integer.parseInt(request.getParameter("prmQuantidadeCompra")));
 
-                } else {
+                } else { throw new Exception("Quantidade informada é inválida!"); }
 
-                    throw new Exception("Quantidade informada não é numérica!");
-
-                }
-
-            } else {
-
-                throw new Exception("Quantidade não foi informada!");
-
-            }
+            } else { throw new Exception("Quantidade não foi informada!"); }
 
             // ---------------------------------------------------------------------
 
-            if ( request.getParameter("prmDataCompra") != null ) {
+            if ( request.getParameter("prmDataCompra") != null
+                && !request.getParameter("prmDataCompra").isEmpty() ) {
 
                 if ( request.getParameter("prmDataCompra").length() == 16 ) {
 
                     comp.setDataCompra(request.getParameter("prmDataCompra"));
 
-                } else {
+                } else { throw new Exception("Data informada é inválida!"); }
 
-                    throw new Exception("Data de compra informado é inválida!");
-
-                }
-
-            } else {
-
-                throw new Exception("Data de compra não foi informada!");
-
-            }
+            } else { throw new Exception("Data não foi informada!"); }
 
             // ---------------------------------------------------------------------
 
-            if ( request.getParameter("prmIdFornecedor") != null ) {
+            if ( request.getParameter("prmIdFornecedor") != null
+                && !request.getParameter("prmIdFornecedor").isEmpty() ) {
 
-                if ( request.getParameter("prmIdFornecedor").matches("\\d+") ) {
+                if ( request.getParameter("prmIdFornecedor").matches("\\d+")
+                    && request.getParameter("prmIdFornecedor").length() <= 11 ) {
 
                     comp.setIdFornecedor(Integer.parseInt(request.getParameter("prmIdFornecedor")));
 
-                } else {
+                } else { throw new Exception("ID do fornecedor informado é inválido!"); }
 
-                    throw new Exception("ID do fornecedor informado é inválido!");
+            } else { throw new Exception("ID do fornecedor não foi informado!"); }
 
-                }
+        } catch (SQLException e) {
 
-            } else {
-
-                throw new Exception("ID do fornecedor não foi informada!");
-
-            }
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
 
         } catch (Exception e) {
 
@@ -245,23 +221,59 @@ public class ControllerCompras extends HttpServlet {
                     request.setAttribute("resMensagem", resMsg);
                     this.doGet(request, response);
 
-                } else {
-
-                    throw new Exception("Não foi possível alterar os dados da compra!");
-
-                }
+                } else { throw new Exception("Não foi possível alterar os dados da compra!"); }
 
             } else {
 
                 if ( compDAO.inserir(comp) ) {
 
-                    Mensagem resMsg = new Mensagem("Dados da compra alterados!", Mensagem.Tipo.SUCESSO);
+                    Mensagem resMsg = new Mensagem("Dados da compra incluídos!", Mensagem.Tipo.SUCESSO);
                     request.setAttribute("resMensagem", resMsg);
                     this.doGet(request, response);
 
+                } else { throw new Exception("Não foi possível incluir os dados da compra!"); }
+
+            }
+
+        } catch (SQLException e) {
+
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
+
+        } catch (Exception e) {
+
+            Mensagem resMsg = new Mensagem(e.getMessage(), Mensagem.Tipo.ERRO);
+            request.setAttribute("resMensagem", resMsg);
+            this.doGet(request, response);
+
+        }
+
+        // Lógica da compra
+
+        try {
+
+            if (!alteracao) {
+
+                prod = prodDAO.buscarPorId(comp.getIdProduto());
+
+                if (prod == null) {
+
+                    throw new Exception("Produto informado não foi localizado!");
+
                 } else {
 
-                    throw new Exception("Não foi possível alterar os dados da compra!");
+                    prod.setPrecoCompra(comp.getValorCompra());
+                    prod.setQuantidadeDisponivel(prod.getQuantidadeDisponivel() + comp.getQuantidadeCompra());
+                    
+                    if ( !(prodDAO.alterar(prod)) ) {
+
+                        throw new Exception("Não foi possível atualizar os dados do produto!");
+
+                    }
 
                 }
 
@@ -284,43 +296,22 @@ public class ControllerCompras extends HttpServlet {
 
         }
 
-        // Lógica da compra
+        // Fecha conexão
 
         try {
 
-            prod = prodDAO.buscarPorId(comp.getIdProduto());
+            prodDAO.encerrarConexao();
+            fornDAO.encerrarConexao();
+            compDAO.encerrarConexao();
 
-            if (prod == null) {
-
-                throw new Exception("Produto informado não foi localizado!");
-
-            } else {
-
-                prod.setPrecoCompra(comp.getValorCompra());
-                prod.setQuantidadeDisponivel(prod.getQuantidadeDisponivel() + comp.getQuantidadeCompra());
-                
-                if ( !(prodDAO.alterar(prod)) ) {
-
-                    throw new Exception("Não foi possível atualizar os dados do produto!");
-
-                }
-
-            }
-
-        } catch (SQLException excecao) {
+        } catch (SQLException e) {
 
             ServletUtils.mensagemErroFatal(
-                "Não foi possível consultar o banco de dados!",
-                excecao,
+                "Não foi possível fechar a conexão com o banco de dados!",
+                e,
                 request,
                 response
             );
-
-        } catch (Exception e) {
-
-            Mensagem resMsg = new Mensagem(e.getMessage(), Mensagem.Tipo.ERRO);
-            request.setAttribute("resMensagem", resMsg);
-            this.doGet(request, response);
 
         }
 
@@ -363,7 +354,8 @@ public class ControllerCompras extends HttpServlet {
 
         try {
 
-            if ( request.getParameter("id") != null ) {
+            if ( request.getParameter("id") != null
+                && !request.getParameter("id").isEmpty() ) {
 
                 if ( request.getParameter("id").matches("\\d+") ) {
 
@@ -374,13 +366,20 @@ public class ControllerCompras extends HttpServlet {
                     
                     if (comp != null) {
 
-                        request.setAttribute("compra", comp);
-                        request.setAttribute("produtos", lista);
+                        if (comp.getIdFuncionario() == (int) request.getSession().getAttribute("usuarioID")) {
 
-                        RequestDispatcher rd = request.getRequestDispatcher("/ControllerCompras.jsp");  
-                        rd.forward(request, response);
+                            request.setAttribute("compra", comp);
+                            request.setAttribute("produtos", lista);
+
+                            RequestDispatcher rd = request.getRequestDispatcher("/ControllerCompras.jsp");  
+                            rd.forward(request, response);
+
+                        } else { throw new Exception("Compra informada não pertence ao usuário atual!"); }
 
                     } else { throw new Exception("Não foi possível localizar a compra informada!"); }
+
+                    compDAO.encerrarConexao();
+                    prodDAO.encerrarConexao();
 
                 } else { throw new Exception("ID da compra informado não é numérico!"); }
 
@@ -487,6 +486,7 @@ public class ControllerCompras extends HttpServlet {
 
             compDAO = new CompraDAO();
             lista = compDAO.listar();
+            compDAO.encerrarConexao();
 
         } catch (SQLException excecao) {
 

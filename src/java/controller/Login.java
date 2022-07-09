@@ -82,12 +82,12 @@ public class Login extends HttpServlet {
         // *         Verifica a presença dos dados no banco de dados           *
         // * ----------------------------------------------------------------- *
 
-        FuncionarioDAO funcDAO = new FuncionarioDAO();
-        Funcionario func = null;
 
         try {
 
-            func = funcDAO.buscarPorCredenciais(prmCPF, prmSenha);
+            FuncionarioDAO funcDAO = new FuncionarioDAO();
+            Funcionario func = funcDAO.buscarPorCredenciais(prmCPF, prmSenha);
+            funcDAO.encerrarConexao();
 
             if (!(func == null)) {
 

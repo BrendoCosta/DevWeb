@@ -1,4 +1,4 @@
-<%@ page import="java.util.ArrayList, app.Mensagem, model.Cliente" contentType="text/html;charset=UTF-8" %>
+<%@ page import="java.util.ArrayList, app.Mensagem" contentType="text/html;charset=UTF-8" %>
 <!DOCTYPE html>
 <html lang="pt-br">
     <jsp:include page="include/head.jsp">
@@ -9,13 +9,12 @@
             <jsp:include page="include/Cabecalho.jsp"/>
             <div class="row g-0 p-4">
                 <div id="aviso"></div>
-                <%=request.getContextPath()%>
+                <div class="pt-4 pb-4"><h2>Área da Aplicação</h2></div>
+                <p>Aplicação CompraVenda de apoio ao controle de compras e vendas de produtos de uma loja física.</p>
             </div>
         </div>
         <jsp:include page="include/scripts.html"/>
-        <script src="assets/libraries/datatables/datatables.min.js"></script>
-        <script src="assets/libraries/datatables/dataTables.responsive.min.js"></script>
-        <script>
+        <script type="text/javascript">
 
             <%
                 Mensagem msg = (Mensagem) request.getAttribute("resMensagem");
@@ -26,9 +25,6 @@
                 }
             %>
 
-            $(document).ready(function () {
-
-            });
         </script>
     </body>
 </html>

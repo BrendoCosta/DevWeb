@@ -14,7 +14,7 @@
         </div>
         <div class="row p-1">
             <div class="col-md-1"><label>CPF</label></div>
-            <div class="col-md-auto"><input type="text" class="form-control cpf" id="prmCPF" name="prmCPF" value="<%=clnt.getCpf()%>"></div>
+            <div class="col-md-auto"><input type="text" class="form-control cpf" id="prmCpf" name="prmCpf" value="<%=clnt.getCpf()%>"></div>
         </div>
         <div class="row p-1">
             <div class="col-md-1"><label>Endereço</label></div>
@@ -31,7 +31,7 @@
         <div class="row p-1">
             <div class="col-md-1"><label>UF</label></div>
             <div class="col-md-auto">
-                <select id="prmUF" class="form-control" name="prmUF">
+                <select id="prmUf" class="form-control" name="prmUf">
                     <option value="AC">Acre</option>
                     <option value="AL">Alagoas</option>
                     <option value="AP">Amapá</option>
@@ -63,7 +63,7 @@
                 <script type="text/javascript">
                     $(document).ready(function() {
 
-                        $("#prmUF option[value='<%=clnt.getUf()%>']").attr("selected", true);
+                        $("#prmUf option[value='<%=clnt.getUf()%>']").attr("selected", true);
 
                     });
                 </script>
@@ -71,7 +71,7 @@
         </div>
         <div class="row p-1">
             <div class="col-md-1"><label>CEP</label></div>
-            <div class="col-md-auto"><input type="text" class="form-control cep" id="prmCEP" name="prmCEP" value="<%=clnt.getCep()%>"></div>
+            <div class="col-md-auto"><input type="text" class="form-control cep" id="prmCep" name="prmCep" value="<%=clnt.getCep()%>"></div>
         </div>
         <div class="row p-1">
             <div class="col-md-1"><label>Telefone</label></div>
@@ -86,21 +86,5 @@
             <div class="col-md-auto"><input type="submit" class="btn btn-outline-primary" id="btnEnviar" value="Enviar"></div>
         </div>
     </form>
-    <script type="text/javascript">
-
-        $(document).ready(function () {
-
-            $(".cpf").mask("000.000.000-00");
-            $(".cep").mask("00000-000");
-            $(".telefone").mask("(00) 0000-0000");
-
-            $("#formulario").submit(function (e) {
-                
-                $(".cep").unmask();
-
-            });
-
-        });
-
-    </script>
+    <script type="text/javascript" src="include/FormClientes.js"></script>
 </div>

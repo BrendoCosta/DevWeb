@@ -39,9 +39,7 @@
             </div>
         </div>
         <jsp:include page="include/scripts.html"/>
-        <script src="assets/libraries/datatables/datatables.min.js"></script>
-        <script src="assets/libraries/datatables/dataTables.responsive.min.js"></script>
-        <script>
+        <script type="text/javascript">
 
             <%
                 Mensagem msg = (Mensagem) request.getAttribute("resMensagem");
@@ -52,21 +50,6 @@
                 }
             %>
 
-            $(document).ready(function () {
-                
-                //$("#tabela").DataTable({ responsive: true });
-
-                $(".link-deletar").click(function(e) {
-
-                    if (!confirm("Confirmar exclusão?")) {
-
-                        e.preventDefault();
-
-                    }
-
-                })
-
-            });
         </script>
     </body>
 </html>

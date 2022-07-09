@@ -21,6 +21,14 @@ public class FornecedorDAO {
 
     /* ---------------------------------------------------------------------- */
 
+    public static void encerrarConexao() throws SQLException {
+
+        FornecedorDAO.conexao.close();
+
+    }
+
+    /* ---------------------------------------------------------------------- */
+
     public static Fornecedor buscarPorId(int id) throws SQLException {
 
         Fornecedor forn = null;

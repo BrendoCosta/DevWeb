@@ -35,7 +35,7 @@
             </div>
         </div>
         <jsp:include page="include/scripts.html"/>
-        <script>
+        <script type="text/javascript">
 
             <%
                 Mensagem msg = (Mensagem) request.getAttribute("resMensagem");

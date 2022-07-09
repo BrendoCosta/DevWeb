@@ -102,6 +102,16 @@
 
             });
 
+            $(".link-deletar").click(function(e) {
+
+                if (!confirm("Confirmar exclusão?")) {
+
+                    e.preventDefault();
+
+                }
+
+            });
+
         });
 
     </script>

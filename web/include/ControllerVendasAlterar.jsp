@@ -43,6 +43,10 @@
             </div>
         </div>
         <div class="row p-1">
+            <div class="col-md-1"><label>Valor da Venda</label></div>
+            <div class="col-md-auto"><input type="text" class="form-control" id="prmValorVenda" name="prmValorVenda" value="<%=ven.getValorVenda()%>"></div>
+        </div>
+        <div class="row p-1">
             <div class="col-md-1"><label>Quantidade</label></div>
             <div class="col-md-auto"><input type="text" class="form-control" id="prmQuantidadeVenda" name="prmQuantidadeVenda" value="<%=ven.getQuantidadeVenda()%>"></div>
         </div>
@@ -51,72 +55,13 @@
             <div class="col-md-auto"><input type="datetime-local" class="form-control" id="prmDataVenda" name="prmDataVenda" value="<%=ven.getDataVenda()%>T00:00"></div>
         </div>
         <div class="row p-1">
-            <div class="col-md-1"><label>CPF do Cliente</label></div>
-            <div class="col-md-auto"><input type="text" class="form-control" id="prmCpfCliente" name="prmCpfCliente" value="<%=clnt.getCpf()%>"></div>
+            <div class="col-md-1"><label>ID do Cliente</label></div>
+            <div class="col-md-auto"><input type="text" class="form-control" id="prmIdCliente" name="prmIdCliente" value="<%=clnt.getId()%>"></div>
         </div>
         <div class="row p-1">
             <div class="col-md-1"></div>
             <div class="col-md-auto"><input type="submit" class="btn btn-outline-primary" id="btnEnviar" value="Enviar"></div>
         </div>
     </form>
-    <script type="text/javascript">
-
-        $(document).ready(function () {
-
-            $("#prmCpfCliente").mask("000.000.000-00");
-
-            $("#prmQuantidadeVenda").on("input", function () {
-                if ( parseInt( $(this).val() ) < 1 ) { 
-                    $(this).val(1); 
-                }
-            });
-
-            $("#formulario").submit(function (e) {
-
-                if (!validaFormCadastro()) {
-
-                    event.preventDefault();
-
-                }
-
-            });
-
-            function validaFormCadastro() {
-
-                removerAviso("aviso");
-
-                // Valida CPF
-
-                if ( $("#prmCpfCliente").val().length != 14 ) {
-
-                    exibirAviso("aviso", "ERRO", "CPF não informado ou com formato inválido!");
-                    return false;
-
-                }
-
-                // Valida quantidade
-
-                if ( !(parseInt($("#prmQuantidadeVenda").val()) >= 1) ) {
-
-                    exibirAviso("aviso", "ERRO", "Quantidade informada inválida!");
-                    return false;
-
-                }
-
-                // Valida data
-
-                if ( $("#prmDataVenda").val() == "" ) {
-
-                    exibirAviso("aviso", "ERRO", "Data da venda não informada!");
-                    return false;
-
-                }
-
-                return true;
-
-            }
-
-        });
-
-    </script>
+    <script type="text/javascript" src="include/FormVendas.js"></script>
 </div>

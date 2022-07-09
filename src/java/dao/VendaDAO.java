@@ -8,6 +8,7 @@ public class VendaDAO {
 
     private static final String BUSCAR_POR_ID = "SELECT * FROM vendas WHERE id = ?";
     private static final String BUSCAR_POR_VENDEDOR = "SELECT * FROM vendas WHERE id_funcionario = ? ORDER BY data_venda DESC";
+    private static final String LISTAR_POR_CLIENTE = "SELECT * FROM vendas WHERE id_cliente = ? ORDER BY data_venda DESC";
     private static final String LISTAR  = "SELECT * FROM vendas ORDER BY data_venda DESC";
     private static final String ALTERAR = "UPDATE vendas SET quantidade_venda = ?, data_venda = ?, valor_venda = ?, id_cliente = ?, id_produto = ?, id_funcionario = ? WHERE id = ?;";
     private static final String INSERIR = "INSERT INTO vendas (quantidade_venda, data_venda, valor_venda, id_cliente, id_produto, id_funcionario) VALUES (?, ?, ?, ?, ?, ?)";
@@ -18,6 +19,14 @@ public class VendaDAO {
     private static Connection conexao = null;
 
     public VendaDAO() { VendaDAO.conexao = Conexao.iniciarConexao(); }
+
+    /* ---------------------------------------------------------------------- */
+
+    public static void encerrarConexao() throws SQLException {
+
+        VendaDAO.conexao.close();
+
+    }
 
     /* ---------------------------------------------------------------------- */
 
@@ -74,6 +83,38 @@ public class VendaDAO {
         pstmt.close();
 
         return ven;
+
+    }
+
+    /* ---------------------------------------------------------------------- */
+
+    public static ArrayList<Venda> listarPorCliente(int idCliente) throws SQLException {
+
+        ArrayList<Venda> lista = new ArrayList<>();
+
+        PreparedStatement pstmt = VendaDAO.conexao.prepareStatement(LISTAR_POR_CLIENTE);
+            pstmt.setInt(1, idCliente);
+        ResultSet resultado = pstmt.executeQuery();
+
+        while ( resultado.next() ) {
+
+            Venda ven = new Venda();
+
+            ven.setId(resultado.getInt("id"));
+            ven.setQuantidadeVenda(resultado.getInt("quantidade_venda"));
+            ven.setDataVenda(resultado.getString("data_venda"));
+            ven.setValorVenda(resultado.getFloat("valor_venda"));
+            ven.setIdCliente(resultado.getInt("id_cliente"));
+            ven.setIdProduto(resultado.getInt("id_produto"));
+            ven.setIdFuncionario(resultado.getInt("id_funcionario"));
+
+            lista.add(ven);
+
+        }
+
+        pstmt.close();
+
+        return lista;
 
     }
 

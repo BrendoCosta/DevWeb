@@ -73,182 +73,194 @@ public class ControllerVendas extends HttpServlet {
 
         Venda ven = new Venda();
         VendaDAO venDAO = new VendaDAO();
+        
+        Produto prod = null;
+        ProdutoDAO prodDAO = new ProdutoDAO();
+
+        Cliente clnt = null;
+        ClienteDAO clntDAO = new ClienteDAO();
+
+        // Valida parâmetros
 
         boolean alteracao = false;
 
-        // Verifica se o POST se refere a uma alteração
+        try {
 
-        if (request.getParameter("prmId") != null) {
+            // ---------------------------------------------------------------------
 
-            if (!((String)request.getParameter("prmId")).isEmpty()
-                && Integer.parseInt(request.getParameter("prmId")) >= 0) {
+            if ( request.getParameter("prmId") != null ) {
 
-                alteracao = true;
-                ven.setId(Integer.parseInt(request.getParameter("prmId")));
+                if ( request.getParameter("prmId").matches("\\d+")
+                    && request.getParameter("prmId").length() <= 11 ) {
+
+                    ven = venDAO.buscarPorId(Integer.parseInt(request.getParameter("prmId")));
+                    
+                    if (ven != null) {
+
+                        if (ven.getIdFuncionario() == (int) request.getSession().getAttribute("usuarioID")) {
+
+                            alteracao = true;
+
+                        } else { throw new Exception("Venda informada não pertence ao funcionário atual!"); }
+
+                    } else { throw new Exception("Não foi possível localizar a venda com o ID informado!"); }
+
+                } else { throw new Exception("ID da venda é inválido!"); }
 
             }
 
+            // ---------------------------------------------------------------------
+
+            ven.setIdFuncionario((int) request.getSession().getAttribute("usuarioID"));
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmValorVenda") != null ) {
+
+                if ( request.getParameter("prmValorVenda").matches("[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)") ) {
+
+                    ven.setValorVenda(Float.parseFloat(request.getParameter("prmValorVenda")));
+
+                } else { throw new Exception("Valor informado é inválido!"); }
+
+            } else { throw new Exception("Valor não foi informado!"); }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmQuantidadeVenda") != null ) {
+
+                if ( request.getParameter("prmQuantidadeVenda").matches("\\d+")
+                    && request.getParameter("prmQuantidadeVenda").length() <= 11 ) {
+
+                    if ( Integer.parseInt(request.getParameter("prmQuantidadeVenda")) > 0) {
+
+                        ven.setQuantidadeVenda(Integer.parseInt(request.getParameter("prmQuantidadeVenda")));
+
+                    } else { throw new Exception("Quantidade informada não pode ser nula!"); }
+
+                } else { throw new Exception("Quantidade informada é inválida!"); }
+
+            } else { throw new Exception("Quantidade não foi informada!"); }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmIdProduto") != null ) {
+
+                if ( request.getParameter("prmIdProduto").matches("\\d+")
+                    && request.getParameter("prmIdProduto").length() <= 11 ) {
+
+                    prod = prodDAO.buscarPorId(Integer.parseInt(request.getParameter("prmIdProduto")));
+
+                    if (prod != null) {
+
+                        if (prod.getLiberadoVenda() == Produto.Liberado.S) {
+
+                            if (prod.getQuantidadeDisponivel() >= ven.getQuantidadeVenda()) {
+
+                                ven.setIdProduto(prod.getId());
+
+                            } else { throw new Exception("Produto informado está esgotado!"); }
+
+                        } else { throw new Exception("Produto informado não está liberado para venda!"); }
+
+                    } else { throw new Exception("Não foi possível localizar o produto com o ID informado!"); }
+
+                } else { throw new Exception("ID do produto é inválido!"); }
+
+            } else { throw new Exception("ID do produto não foi informado!"); }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmDataVenda") != null ) {
+
+                if ( request.getParameter("prmDataVenda").length() == 16 ) {
+
+                    ven.setDataVenda(request.getParameter("prmDataVenda"));
+
+                } else { throw new Exception("Data informada é inválida!"); }
+
+            } else { throw new Exception("Data não foi informada!"); }
+
+            // ---------------------------------------------------------------------
+
+            if ( request.getParameter("prmIdCliente") != null ) {
+
+                if ( request.getParameter("prmIdCliente").matches("\\d+")
+                    && request.getParameter("prmIdCliente").length() <= 11 ) {
+
+                    clnt = clntDAO.buscarPorId(Integer.parseInt(request.getParameter("prmIdCliente")));
+
+                    if (clnt != null) {
+
+                        ven.setIdCliente(clnt.getId());
+
+                    } else { throw new Exception("Não foi possível localizar o cliente com o ID informado!"); }
+
+                } else { throw new Exception("ID do cliente informado é inválido!"); }
+
+            } else { throw new Exception("ID do cliente não foi informado!"); }
+
+        } catch (SQLException e) {
+
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
+
+        } catch (Exception e) {
+
+            Mensagem resMsg = new Mensagem(e.getMessage(), Mensagem.Tipo.ERRO);
+            request.setAttribute("resMensagem", resMsg);
+            this.doGet(request, response);
+
         }
 
-        // Busca o produto especificado no sistema
-
-        Produto prod = null;
-        ProdutoDAO prodDAO = null;
+        // Inclusão / Alteração
 
         try {
 
-            prodDAO = new ProdutoDAO();
-            prod = prodDAO.buscarPorId( Integer.parseInt(request.getParameter("prmIdProduto")) );
+            if (alteracao) {
 
-            if (prod == null) {
+                if ( venDAO.alterar(ven) ) {
 
-                Mensagem resMsg = new Mensagem("Não foi possível localizar o produto especificado!", Mensagem.Tipo.ERRO);
-                request.setAttribute("resMensagem", resMsg);
-                this.doGet(request, response);
+                    Mensagem resMsg = new Mensagem("Dados da venda alterados!", Mensagem.Tipo.SUCESSO);
+                    request.setAttribute("resMensagem", resMsg);
+                    this.doGet(request, response);
+
+                } else { throw new Exception("Não foi possível alterar os dados da venda!"); }
 
             } else {
 
-                if (prod.getLiberadoVenda() == Produto.Liberado.N) {
+                if ( venDAO.inserir(ven) && prodDAO.vender(prod.getId(), ven.getQuantidadeVenda()) ) {
 
-                    Mensagem resMsg = new Mensagem("Produto especificado não está liberado para venda!", Mensagem.Tipo.ERRO);
+                    Mensagem resMsg = new Mensagem("Dados da venda incluídos!", Mensagem.Tipo.SUCESSO);
                     request.setAttribute("resMensagem", resMsg);
                     this.doGet(request, response);
 
-                }
-
-                if ( !(prod.getQuantidadeDisponivel() >= 1) ) {
-
-                    Mensagem resMsg = new Mensagem("Produto especificado está esgotado!", Mensagem.Tipo.ERRO);
-                    request.setAttribute("resMensagem", resMsg);
-                    this.doGet(request, response);
-
-                }
+                } else { throw new Exception("Não foi possível incluir os dados da venda!"); }
 
             }
 
-        } catch (SQLException excecao) {
+            venDAO.encerrarConexao();
+            prodDAO.encerrarConexao();
+            clntDAO.encerrarConexao();
+
+        } catch (SQLException e) {
 
             ServletUtils.mensagemErroFatal(
-                "Não foi possível consultar o banco de dados para consultar os produtos!",
-                excecao,
+                "Não foi possível consultar o banco de dados!",
+                e,
                 request,
                 response
             );
 
-        }
+        } catch (Exception e) {
 
-        // Busca o cliente no sistema
-
-        Cliente clnt = null;
-        ClienteDAO clntDAO = null;
-
-        try {
-
-            clntDAO = new ClienteDAO();
-            clnt = clntDAO.buscarPorCpf((String) request.getParameter("prmCpfCliente"));
-
-            if (clnt == null) {
-
-                Mensagem resMsg = new Mensagem("Não foi possível localizar o cliente especificado!", Mensagem.Tipo.ERRO);
-                request.setAttribute("resMensagem", resMsg);
-                this.doGet(request, response);
-
-            }
-
-        } catch (SQLException excecao) {
-
-            ServletUtils.mensagemErroFatal(
-                "Não foi possível consultar o banco de dados para consultar os clientes!",
-                excecao,
-                request,
-                response
-            );
-
-        }
-
-        // Dados da venda
-
-        ven.setDataVenda( (String) request.getParameter("prmDataVenda") );
-        ven.setQuantidadeVenda( Integer.parseInt(request.getParameter("prmQuantidadeVenda")) );
-        ven.setValorVenda((float) (prod.getPrecoVenda() * Integer.parseInt(request.getParameter("prmQuantidadeVenda"))));
-        ven.setIdCliente( clnt.getId() );
-        ven.setIdProduto( prod.getId() );
-        ven.setIdFuncionario( (Integer) (request.getSession()).getAttribute("usuarioID") );
-
-        if (alteracao) {
-
-            // Altera venda
-
-            try {
-
-                Venda venAux = venDAO.buscarPorId(ven.getId());
-
-                if ( venAux.getIdFuncionario() == (Integer) (request.getSession()).getAttribute("usuarioID") ) {
-
-                    venDAO.alterar(ven);
-
-                    Mensagem resMsg = new Mensagem("Venda alterada!", Mensagem.Tipo.SUCESSO);
-                    request.setAttribute("resMensagem", resMsg);
-                    this.doGet(request, response);
-
-                } else {
-
-                    Mensagem resMsg = new Mensagem("Venda selecionada para alteração não pertence ao usuário atual!", Mensagem.Tipo.ERRO);
-                    request.setAttribute("resMensagem", resMsg);
-                    this.doGet(request, response);
-
-                }
-
-            } catch (SQLException excecao) {
-
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível altera os dados da venda no banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
-
-            }
-
-        } else {
-
-            // Vende produto
-
-            try {
-
-                prodDAO.vender(prod.getId(), Integer.parseInt(request.getParameter("prmQuantidadeVenda")));
-
-            } catch (SQLException excecao) {
-
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível cadastrar a venda do produto no banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
-
-            }
-
-            // Cadastra venda
-
-            try {
-
-                venDAO.inserir(ven);
-
-                Mensagem resMsg = new Mensagem("Venda realizada!", Mensagem.Tipo.SUCESSO);
-                request.setAttribute("resMensagem", resMsg);
-                this.doGet(request, response);
-
-            } catch (SQLException excecao) {
-
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível cadastrar a venda para o cliente no banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
-
-            }
+            Mensagem resMsg = new Mensagem(e.getMessage(), Mensagem.Tipo.ERRO);
+            request.setAttribute("resMensagem", resMsg);
+            this.doGet(request, response);
 
         }
 
@@ -288,111 +300,79 @@ public class ControllerVendas extends HttpServlet {
     throws ServletException, IOException {
 
         request.setAttribute("acao", "alterar");
-        
-        Integer id = null;
-        
-        if (!((String) request.getParameter("id") == null)) {
 
-            id = Integer.parseInt( (String) request.getParameter("id") );
+        try {
 
-        }
+            if ( request.getParameter("id") != null
+                && !request.getParameter("id").isEmpty() ) {
 
-        if (id != null) {
+                if ( request.getParameter("id").matches("\\d+") ) {
 
-            Venda ven          = null;
-            Produto prod       = null;
-            Cliente clnt       = null;
-            ArrayList<Produto> lista = null;
-            VendaDAO venDAO    = new VendaDAO();
-            ProdutoDAO prodDAO = new ProdutoDAO();
-            ClienteDAO clntDAO = new ClienteDAO();
+                    VendaDAO venDAO    = new VendaDAO();
+                    ProdutoDAO prodDAO = new ProdutoDAO();
+                    ClienteDAO clntDAO = new ClienteDAO();
+                    Venda ven          = null;
+                    Produto prod       = null;
+                    Cliente clnt       = null;
+                    ArrayList<Produto> lista = null;
 
-            try {
+                    ven   = venDAO.buscarPorId(Integer.parseInt(request.getParameter("id")));
+                    prod  = prodDAO.buscarPorId(ven.getIdProduto());
+                    clnt  = clntDAO.buscarPorId(ven.getIdCliente());
+                    lista = prodDAO.listar();
+                    
+                    if (ven != null) {
 
-                ven   = venDAO.buscarPorId(id);
-                clnt  = clntDAO.buscarPorId(ven.getIdCliente());
-                prod  = prodDAO.buscarPorId(ven.getIdProduto());
-                lista = prodDAO.listar();
+                        if (ven.getIdFuncionario() == (int) request.getSession().getAttribute("usuarioID")) {
 
-                if (!(ven == null)) {
+                            if (prod != null ) {
 
-                    request.setAttribute("venda", ven);
+                                if (clnt != null ) {
 
-                } else {
+                                    request.setAttribute("venda", ven);
+                                    request.setAttribute("cliente", clnt);
+                                    request.setAttribute("produto", prod);
+                                    request.setAttribute("produtosDisponiveis", lista);
 
-                    ServletUtils.mensagem(
-                        "/ControllerVendas?acao=listar",
-                        "Não foi possível encontrar a venda com o ID informado!",
-                        Mensagem.Tipo.ERRO,
-                        request,
-                        response
-                    );
+                                    RequestDispatcher rd = request.getRequestDispatcher("/ControllerVendas.jsp");  
+                                    rd.forward(request, response);
 
-                }
+                                } else { throw new Exception("Não foi possível localizar o cliente associado a venda informada!"); }
 
-                if (!(clnt == null)) {
+                            } else { throw new Exception("Não foi possível localizar o produto associado a venda informada!"); }
 
-                    request.setAttribute("cliente", clnt);
+                        } else { throw new Exception("Venda informada não pertence ao usuário atual!"); }
 
-                } else {
+                    } else { throw new Exception("Não foi possível localizar a venda informada!"); }
 
-                    ServletUtils.mensagem(
-                        "/ControllerVendas?acao=listar",
-                        "Não foi possível encontrar o cliente associado a venda!",
-                        Mensagem.Tipo.ERRO,
-                        request,
-                        response
-                    );
+                    venDAO.encerrarConexao();
+                    prodDAO.encerrarConexao();
+                    clntDAO.encerrarConexao();
 
-                }
+                } else { throw new Exception("ID da venda informado não é numérico!"); }
 
-                if (!(prod == null)) {
+            } else { throw new Exception("ID da venda não foi informado!"); }
 
-                    request.setAttribute("produto", prod);
+        } catch (SQLException e) {
 
-                } else {
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
 
-                    ServletUtils.mensagem(
-                        "/ControllerVendas?acao=listar",
-                        "Não foi possível encontrar o produto associado a venda!",
-                        Mensagem.Tipo.ERRO,
-                        request,
-                        response
-                    );
+        } catch (Exception e) {
 
-                }
-
-                if (!(lista == null)) {
-
-                    request.setAttribute("produtosDisponiveis", lista);
-
-                } else {
-
-                    ServletUtils.mensagem(
-                        "/ControllerVendas?acao=listar",
-                        "Não foi possível listar os produto cadastrados!",
-                        Mensagem.Tipo.ERRO,
-                        request,
-                        response
-                    );
-
-                }
-
-            } catch (SQLException excecao) {
-
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível consultar o banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
-
-            }
+            ServletUtils.mensagem(
+                "/ControllerVendas?acao=listar",
+                e.getMessage(),
+                Mensagem.Tipo.ERRO,
+                request,
+                response
+            );
 
         }
-
-        RequestDispatcher rd = request.getRequestDispatcher("/ControllerVendas.jsp");  
-        rd.forward(request, response);
 
     }
 
@@ -401,76 +381,58 @@ public class ControllerVendas extends HttpServlet {
     private void excluir(HttpServletRequest request, HttpServletResponse response) 
     throws ServletException, IOException {
 
-        int id = -1;
+        request.setAttribute("acao", "excluir");
 
-        if (request.getParameter("id") != null) {
+        try {
 
-            id = Integer.parseInt(request.getParameter("id"));
+            if ( request.getParameter("id") != null ) {
 
-        }
+                if ( request.getParameter("id").matches("\\d+") ) {
 
-        if (id != -1) {
+                    int id = Integer.parseInt(request.getParameter("id"));
+                    VendaDAO venDAO = new VendaDAO();
+                    Venda ven = venDAO.buscarPorId(id);
+                    
+                    if (ven != null) {
 
-            Venda ven = null;
-            VendaDAO venDAO = null;
+                        if (ven.getIdFuncionario() == (int) request.getSession().getAttribute("usuarioID")) {
 
-            try {
+                            if ( venDAO.deletar(id) ) {
 
-                venDAO = new VendaDAO();
-                ven = venDAO.buscarPorId(id);
+                                ServletUtils.mensagem(
+                                    "/ControllerVendas?acao=listar",
+                                    "Venda excluída!",
+                                    Mensagem.Tipo.SUCESSO,
+                                    request,
+                                    response
+                                );
 
-                if ( ven.getIdFuncionario() == (Integer) (request.getSession()).getAttribute("usuarioID") ) {
+                            } else { throw new Exception("Não foi possível excluir a venda informada!"); }
+                            
+                        } else { throw new Exception("Venda informada não pertence ao usuário atual!"); }
 
-                    if ( venDAO.deletar(id) ) {
+                    } else { throw new Exception("Não foi possível localizar a venda informada!"); }
 
-                        ServletUtils.mensagem(
-                            "/ControllerVendas?acao=listar",
-                            "Venda excluída!",
-                            Mensagem.Tipo.SUCESSO,
-                            request,
-                            response
-                        );
+                    venDAO.encerrarConexao();
 
-                    } else {
+                } else { throw new Exception("ID da venda informado não é numérico!"); }
 
-                        ServletUtils.mensagem(
-                            "/ControllerVendas?acao=listar",
-                            "Não foi possível excluir a venda selecionado!",
-                            Mensagem.Tipo.ERRO,
-                            request,
-                            response
-                        );
+            } else { throw new Exception("ID da venda não foi informado!"); }
 
-                    }
+        } catch (SQLException e) {
 
-                } else {
+            ServletUtils.mensagemErroFatal(
+                "Não foi possível consultar o banco de dados!",
+                e,
+                request,
+                response
+            );
 
-                    ServletUtils.mensagem(
-                        "/ControllerVendas?acao=listar",
-                        "Venda selecionada para exclusão não pertence ao usuário atual!",
-                        Mensagem.Tipo.ERRO,
-                        request,
-                        response
-                    );
-
-                }
-
-            } catch (SQLException excecao) {
-
-                ServletUtils.mensagemErroFatal(
-                    "Não foi possível consultar o banco de dados!",
-                    excecao,
-                    request,
-                    response
-                );
-
-            }
-
-        } else {
+        } catch (Exception e) {
 
             ServletUtils.mensagem(
-                "/ControllerClientes?acao=listar",
-                "ID da venda não informado!",
+                "/ControllerVendas?acao=listar",
+                e.getMessage(),
                 Mensagem.Tipo.ERRO,
                 request,
                 response
@@ -494,6 +456,7 @@ public class ControllerVendas extends HttpServlet {
 
             venDAO = new VendaDAO();
             lista = venDAO.listar();
+            venDAO.encerrarConexao();
 
         } catch (SQLException excecao) {
 
