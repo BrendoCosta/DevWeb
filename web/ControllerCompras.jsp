@@ -1,4 +1,4 @@
-<%@ page import="java.util.ArrayList, app.Mensagem, model.Cliente" contentType="text/html;charset=UTF-8" %>
+<%@ page import="java.util.ArrayList, app.Mensagem" contentType="text/html;charset=UTF-8" %>
 <!DOCTYPE html>
 <html lang="pt-br">
     <jsp:include page="include/head.jsp">
@@ -15,22 +15,22 @@
 
                         case "incluir":
 
-                            %><jsp:include page="include/ControllerVendasIncluir.jsp"/><%
+                            %><jsp:include page="include/ControllerComprasIncluir.jsp"/><%
                             break;
 
                         case "alterar":
 
-                            %><jsp:include page="include/ControllerVendasAlterar.jsp"/><%
+                            %><jsp:include page="include/ControllerComprasAlterar.jsp"/><%
                             break;
 
                         case "listar":
 
-                            %><jsp:include page="include/ControllerVendasListar.jsp"/><%
+                            %><jsp:include page="include/ControllerComprasListar.jsp"/><%
                             break;
 
                         default:
 
-                            %><jsp:include page="include/ControllerVendasListar.jsp"/><%
+                            %><jsp:include page="include/ControllerComprasListar.jsp"/><%
                             break;
 
                     }

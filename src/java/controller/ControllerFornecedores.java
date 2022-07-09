@@ -121,7 +121,7 @@ public class ControllerFornecedores extends HttpServlet {
             } catch (SQLException excecao) {
 
                 ServletUtils.mensagemErroFatal(
-                    "Não foi possível altera os dados do fornecedor no banco de dados!",
+                    "Não foi possível alterar os dados do fornecedor no banco de dados!",
                     excecao,
                     request,
                     response
@@ -211,7 +211,7 @@ public class ControllerFornecedores extends HttpServlet {
 
                     ServletUtils.mensagem(
                         "/ControllerVendas?acao=listar",
-                        "Não foi possível encontrar o fornecedor com o ID informado!",
+                        "Não foi possível localizar o fornecedor com o ID informado!",
                         Mensagem.Tipo.ERRO,
                         request,
                         response

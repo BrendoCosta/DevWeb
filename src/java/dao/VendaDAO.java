@@ -6,7 +6,7 @@ import java.sql.*;
 
 public class VendaDAO {
 
-    private static final String BUSCAR_POR_ID = "SELECT * FROM vendas WHERE id = ? ORDER BY data_venda DESC";
+    private static final String BUSCAR_POR_ID = "SELECT * FROM vendas WHERE id = ?";
     private static final String BUSCAR_POR_VENDEDOR = "SELECT * FROM vendas WHERE id_funcionario = ? ORDER BY data_venda DESC";
     private static final String LISTAR  = "SELECT * FROM vendas ORDER BY data_venda DESC";
     private static final String ALTERAR = "UPDATE vendas SET quantidade_venda = ?, data_venda = ?, valor_venda = ?, id_cliente = ?, id_produto = ?, id_funcionario = ? WHERE id = ?;";
@@ -23,13 +23,15 @@ public class VendaDAO {
 
     public static Venda buscarPorId(int idVenda) throws SQLException {
 
-        Venda ven = new Venda();
+        Venda ven = null;
 
         PreparedStatement pstmt = VendaDAO.conexao.prepareStatement(BUSCAR_POR_ID);
             pstmt.setInt(1, idVenda);
         ResultSet resultado = pstmt.executeQuery();
         
         if ( resultado.isBeforeFirst() && resultado.next() ) {
+
+            ven = new Venda();
             
             ven.setId(resultado.getInt("id"));
             ven.setQuantidadeVenda(resultado.getInt("quantidade_venda"));

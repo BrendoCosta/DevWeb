@@ -19,6 +19,15 @@
                 <li class="nav-item">
                     <a class="nav-link" aria-current="page" href="ControllerFornecedores">Fornecedores</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="ControllerCategorias">Categorias</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="ControllerProdutos">Produtos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="ControllerCompras">Compras</a>
+                </li>
             </ul>
             <div class="row navbar-text d-flex flex-row align-items-center">
                 <div class="col-md-auto">
