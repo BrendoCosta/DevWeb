@@ -10,42 +10,74 @@
                 <li class="nav-item">
                     <a class="nav-link" aria-current="page" href="/<%=request.getContextPath().replace("/", "")%>/Area">Início</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="ControllerClientes">Clientes</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="ControllerVendas">Vendas</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="ControllerFornecedores">Fornecedores</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="ControllerCategorias">Categorias</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="ControllerProdutos">Produtos</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="ControllerCompras">Compras</a>
-                </li>
+                <%
+                    Funcionario.Papel papel = (Funcionario.Papel) request.getSession().getAttribute("usuarioPapel");
+                    switch (papel) {
+
+                        case VENDEDOR:
+                            %>
+                            <li class="nav-item">
+                                <a class="nav-link" aria-current="page" href="ControllerClientes">Clientes</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" aria-current="page" href="ControllerVendas">Vendas</a>
+                            </li>
+                            <%
+                            break;
+                        
+                        case COMPRADOR:
+                            %>
+                            <li class="nav-item">
+                                <a class="nav-link" aria-current="page" href="ControllerFornecedores">Fornecedores</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" aria-current="page" href="ControllerCategorias">Categorias</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" aria-current="page" href="ControllerProdutos">Produtos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" aria-current="page" href="ControllerCompras">Compras</a>
+                            </li>
+                            <%
+                            break;
+
+                        case ADMIN:
+                            %>
+                            <li class="nav-item">
+                                <a class="nav-link" aria-current="page" href="ControllerFuncionarios">Funcionários</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" aria-current="page" href="ControllerRelatorioEstoque">Relatório de Estoque de Produtos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" aria-current="page" href="ControllerRelatorioVendas">Relatório de Vendas de Produtos</a>
+                            </li>
+                            <%
+                            break;
+
+                    }
+
+                %>
             </ul>
             <div class="row navbar-text d-flex flex-row align-items-center">
                 <div class="col-md-auto">
                     <span>Logado como <strong>
+                    <%=(String)request.getSession().getAttribute("usuarioNome")%> | 
                     <%
-                        Funcionario.Papel papel = (Funcionario.Papel) request.getSession().getAttribute("usuarioPapel");
+                        
                         switch (papel) {
 
                             case VENDEDOR:
-                                %>vendedor<%
+                                %>Vendedor<%
                                 break;
                             
                             case COMPRADOR:
-                                %>comprador<%
+                                %>Comprador<%
                                 break;
 
                             case ADMIN:
-                                %>administrador<%
+                                %>Administrador<%
                                 break;
 
                         }
