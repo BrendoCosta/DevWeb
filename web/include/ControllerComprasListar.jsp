@@ -26,6 +26,7 @@
                 <th scope="col">#</th>
                 <th scope="col">ID da Compra</th>
                 <th scope="col">ID do Fornecedor</th>
+                <th scope="col">ID do Funcionário</th>
                 <th scope="col">ID do Produto</th>
                 <th scope="col">Quantidade Comprada</th>
                 <th scope="col">Valor Total</th>
@@ -48,6 +49,7 @@
                             <th scope="row"><%= i + 1 %></th>
                             <td><%= aux.getId() %></td>
                             <td><%= aux.getIdFornecedor() %></td>
+                            <td><%= aux.getIdFuncionario() %></td>
                             <td><%= aux.getIdProduto() %></td>
                             <td><%= aux.getQuantidadeCompra() %> unidade(s)</td>
                             <td><%= aux.getValorCompra() %> R$</td>
