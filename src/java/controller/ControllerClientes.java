@@ -78,25 +78,26 @@ public class ControllerClientes extends HttpServlet {
 
             // ---------------------------------------------------------------------
 
-            if ( request.getParameter("prmId") != null ) {
+            if ( request.getParameter("prmId") != null
+                && !request.getParameter("prmId").isEmpty() ) {
 
                 if ( request.getParameter("prmId").matches("\\d+")
                     && request.getParameter("prmId").length() <= 11 ) {
 
-                    clnt = clntDAO.buscarPorId(Integer.parseInt(request.getParameter("prmId")));
-                    
-                    if (clnt != null) {
+                    if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.VENDEDOR) {
 
-                        if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.VENDEDOR) {
+                        clnt = clntDAO.buscarPorId(Integer.parseInt(request.getParameter("prmId")));
+                        
+                        if (clnt != null) {
 
                             alteracao = true;
                             clnt.setId(Integer.parseInt(request.getParameter("prmId")));
 
-                        } else { throw new Exception("Apenas vendedores podem alterar clientes!"); }
+                        } else { throw new Exception("Não foi possível localizar o cliente com o ID informado!"); }
 
-                    } else { throw new Exception("Não foi possível localizar o cliente com o ID informado!"); }
+                    } else { throw new Exception("Apenas vendedores podem incluir ou alterar clientes!"); }
 
-                }
+                } else { throw new Exception("ID do cliente informado não é numérico!"); }
 
             }
 
@@ -360,18 +361,19 @@ public class ControllerClientes extends HttpServlet {
 
         try {
 
-            if ( request.getParameter("id") != null ) {
+            if ( request.getParameter("id") != null
+                && !request.getParameter("id").isEmpty() ) {
 
                 if ( request.getParameter("id").matches("\\d+") ) {
 
-                    int id = Integer.parseInt(request.getParameter("id"));
-                    ClienteDAO clntDAO = new ClienteDAO();
-                    Cliente clnt = clntDAO.buscarPorId(id);
-                    VendaDAO venDAO = new VendaDAO();
-                    
-                    if (clnt != null) {
+                    if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.VENDEDOR) {
 
-                        if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.VENDEDOR) {
+                        int id = Integer.parseInt(request.getParameter("id"));
+                        ClienteDAO clntDAO = new ClienteDAO();
+                        Cliente clnt = clntDAO.buscarPorId(id);
+                        VendaDAO venDAO = new VendaDAO();
+                        
+                        if (clnt != null) {
 
                             if (venDAO.listarPorCliente(clnt.getId()).size() == 0) {
 
@@ -388,13 +390,13 @@ public class ControllerClientes extends HttpServlet {
                                 } else { throw new Exception("Não foi possível excluir o cliente informado!"); }
 
                             } else { throw new Exception("Não foi possível excluir o cliente informado pois há vendas cadastradas para ele!"); }
-                            
-                        } else { throw new Exception("Apenas vendedores podem excluir clientes!"); }
 
-                    } else { throw new Exception("Não foi possível localizar o cliente informado!"); }
+                        } else { throw new Exception("Não foi possível localizar o cliente informado!"); }
 
-                    clntDAO.encerrarConexao();
-                    venDAO.encerrarConexao();
+                        clntDAO.encerrarConexao();
+                        venDAO.encerrarConexao();
+                        
+                    } else { throw new Exception("Apenas vendedores podem excluir clientes!"); }
 
                 } else { throw new Exception("ID do cliente informado não é numérico!"); }
 
@@ -412,7 +414,7 @@ public class ControllerClientes extends HttpServlet {
         } catch (Exception e) {
 
             ServletUtils.mensagem(
-                "/ControllerClientes?acao=listar",
+                "/Area",
                 e.getMessage(),
                 Mensagem.Tipo.ERRO,
                 request,

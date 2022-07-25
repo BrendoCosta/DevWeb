@@ -17,10 +17,6 @@
                 <th scope="col">#</th>
                 <th scope="col">ID</th>
                 <th scope="col">Nome</th>
-                <th scope="col">Descrição</th>
-                <th scope="col">Preço de Compra</th>
-                <th scope="col">Preço de Venda</th>
-                <th scope="col">Quantidade Disponível</th>
                 <th scope="col">Liberado para Venda?</th>
                 <% if ( isComprador ) { %><th colspan="1">Ação</th><% } %>
             </tr>
@@ -41,10 +37,6 @@
                             <th scope="row"><%= i + 1 %></th>
                             <td><%= aux.getId() %></td>
                             <td><%= aux.getNomeProduto() %></td>
-                            <td><%= aux.getDescricao() %></td>
-                            <td><%= aux.getPrecoCompra() %></td>
-                            <td><%= aux.getPrecoVenda() %></td>
-                            <td><%= aux.getQuantidadeDisponivel() %></td>
                             <td><%= estado %></td>
                             <% if ( isComprador ) { %>
                                 <td>

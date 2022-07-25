@@ -20,8 +20,33 @@ public class Login extends HttpServlet {
         HttpSession sessao = request.getSession();
         sessao.invalidate();
 
-        RequestDispatcher rd = request.getRequestDispatcher("/Login.jsp");  
-        rd.forward(request, response); 
+        try {
+
+            if ( request.getParameter("papel") != null
+                && !request.getParameter("papel").isEmpty() ) {
+
+                if ( request.getParameter("papel").matches("\\d+") ) {
+
+                    request.setAttribute("papel", request.getParameter("papel"));
+
+                    RequestDispatcher rd = request.getRequestDispatcher("/Login.jsp");  
+                    rd.forward(request, response);
+
+                } else { throw new Exception("Papel inválido!"); }
+
+            } else { throw new Exception("Papel não informado!"); }
+
+        } catch (Exception e) {
+
+            ServletUtils.mensagem(
+                "/Index",
+                e.getMessage(),
+                Mensagem.Tipo.ERRO,
+                request,
+                response
+            );
+
+        }
 
     }
 
@@ -29,64 +54,52 @@ public class Login extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
     throws ServletException, IOException {
 
-        // * ----------------------------------------------------------------- *
-        // *                 Armazena dados enviados no formulário             *
-        // * ----------------------------------------------------------------- *
-
-        String prmCPF = request.getParameter("prmCPF");
-        String prmSenha = request.getParameter("prmSenha");
-
-        // * ----------------------------------------------------------------- *
-        // *                    Realiza validações dos dados                   *
-        // * ----------------------------------------------------------------- *
-
-        // Valida quantidade de caracteres nos campos
-        
-        if ( prmCPF.length() != 14 ) {
-
-            ServletUtils.mensagem(
-                "/Login",
-                "CPF não informado ou com formato inválido!",
-                Mensagem.Tipo.ERRO,
-                request,
-                response
-            );
-
-        }
-
-        if ( prmSenha.length() == 0 ) {
-
-            ServletUtils.mensagem(
-                "/Login",
-                "Senha não informada!",
-                Mensagem.Tipo.ERRO,
-                request,
-                response
-            );
-
-        }
-
-        if ( prmSenha.length() > 10 ) {
-
-            ServletUtils.mensagem(
-                "/Login",
-                "Senha informada é maior que o permitido!",
-                Mensagem.Tipo.ERRO,
-                request,
-                response
-            );
-
-        }
-
-        // * ----------------------------------------------------------------- *
-        // *         Verifica a presença dos dados no banco de dados           *
-        // * ----------------------------------------------------------------- *
-
-
         try {
 
+            // * ----------------------------------------------------------------- *
+            // *                 Armazena dados enviados no formulário             *
+            // * ----------------------------------------------------------------- *
+
+            String prmCPF = request.getParameter("prmCPF");
+            String prmSenha = request.getParameter("prmSenha");
+            String prmPapel = request.getParameter("prmPapel");
+
+            // * ----------------------------------------------------------------- *
+            // *                    Realiza validações dos dados                   *
+            // * ----------------------------------------------------------------- *
+
+            // Valida quantidade de caracteres nos campos
+            
+            if ( prmCPF.length() != 14 ) {
+
+                throw new Exception("CPF não informado ou com formato inválido!");
+
+            }
+
+            if ( prmSenha.length() == 0 ) {
+
+                throw new Exception("Senha não informada!");
+
+            }
+
+            if ( prmSenha.length() > 10 ) {
+
+                throw new Exception("Senha informada é maior que o permitido!");
+
+            }
+
+            if ( prmPapel.length() != 1 ) {
+
+                throw new Exception("Papel inválido!");
+
+            }
+
+            // * ----------------------------------------------------------------- *
+            // *         Verifica a presença dos dados no banco de dados           *
+            // * ----------------------------------------------------------------- *
+
             FuncionarioDAO funcDAO = new FuncionarioDAO();
-            Funcionario func = funcDAO.buscarPorCredenciais(prmCPF, prmSenha);
+            Funcionario func = funcDAO.buscarPorCredenciais(prmCPF, prmSenha, prmPapel);
             funcDAO.encerrarConexao();
 
             if (!(func == null)) {
@@ -103,26 +116,23 @@ public class Login extends HttpServlet {
 
                 response.sendRedirect(request.getContextPath() + "/Area");
 
-            } else {
+            } else { throw new Exception("Não foi possível encontrar o usuário com as credenciais informadas!"); }
 
-                ServletUtils.mensagem(
-                    "/Login",
-                    "Não foi possível encontrar o usuário com as credenciais informadas!",
-                    Mensagem.Tipo.ERRO,
-                    request,
-                    response
-                );
-
-            }
-
-        } catch (SQLException excecao) {
+        } catch (SQLException e) {
 
             ServletUtils.mensagemErroFatal(
                 "Não foi possível consultar o banco de dados!",
-                excecao,
+                e,
                 request,
                 response
             );
+
+        } catch (Exception e) {
+
+            Mensagem resMsg = new Mensagem(e.getMessage(), Mensagem.Tipo.ERRO);
+            request.setAttribute("resMensagem", resMsg);
+            
+            response.sendRedirect(request.getContextPath() + "/Index?papel=e");
 
         }
 

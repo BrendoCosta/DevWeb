@@ -12,35 +12,7 @@
         <input type="hidden" id="prmId" name="prmId" value="<%= ven.getId() %>">
         <div class="row p-1">
             <div class="col-md-1"><label>Produto</label></div>
-            <div class="col-md-auto">
-                <select class="form-control" id="prmIdProduto" name="prmIdProduto">
-                <%
-                    ArrayList<Produto> lista = (ArrayList<Produto>) request.getAttribute("produtosDisponiveis");
-
-                    if (lista != null) {
-
-                        for (int i = 0; i < lista.size(); i++) {
-
-                            Produto aux = lista.get(i);
-                            String liberado = aux.getLiberadoVenda() == Produto.Liberado.S ? "" : "disabled";
-
-                            %>
-                                <option value="<%= aux.getId() %>" <%= liberado %> ><%= aux.getNomeProduto() %></option>
-                            <%
-                        }
-
-                    }
-                    
-                %>
-                </select>
-                <script type="text/javascript">
-                    $(document).ready(function() {
-
-                        $("#prmIdProduto option[value='<%=ven.getIdProduto()%>']").attr("selected", true);
-
-                    });
-                </script>
-            </div>
+            <div class="col-md-auto"><input type="text" class="form-control" id="prmIdProduto" name="prmIdProduto" value="<%=ven.getIdProduto()%>"></div>
         </div>
         <div class="row p-1">
             <div class="col-md-1"><label>Valor da Venda</label></div>

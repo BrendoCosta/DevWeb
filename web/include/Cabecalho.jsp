@@ -90,7 +90,7 @@
                     <script type="text/javascript">
                         $("#btn-logout").on("click", function() {
                             if (confirm("Deseja sair?")) {
-                                window.location.href = "/<%=request.getContextPath().replace("/", "")%>/Login";
+                                window.location.href = "/<%=request.getContextPath().replace("/", "")%>/";
                             }
                         });
                     </script>

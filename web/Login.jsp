@@ -14,6 +14,7 @@
                     <div id="formBody">
                         <div id="carregando"></div>
                         <form id="formLogin" method="post" action="Login">
+                            <input type="hidden" id="prmPapel" name="prmPapel" value="<%=(String) request.getAttribute("papel")%>">
                             <div class="row"><h2 class="p-0">Login</h2></div>
                             <div class="row"><p class="p-0">Insira suas credenciais de acesso</p></div>
                             <div class="row pb-2">
@@ -26,7 +27,10 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-2 ps-0"></div>
-                                <div class="col-md-10 ps-0"><button type="submit" class="btn btn-primary" id="btnEnviar" name="btnEnviar">Entrar</button></div>
+                                <div class="col-md-10 ps-0">
+                                    <input type="submit" class="btn btn-outline-primary" id="btnEnviar" name="btnEnviar" value="Entrar">
+                                    <a href="/DevWeb/" class="btn btn-outline-primary">Voltar</a>
+                                </div>
                             </div>
                         </form>
                     </div>

@@ -77,25 +77,26 @@ public class ControllerCategorias extends HttpServlet {
 
             // ---------------------------------------------------------------------
 
-            if ( request.getParameter("prmId") != null ) {
+            if ( request.getParameter("prmId") != null 
+                && !request.getParameter("prmId").isEmpty() ) {
 
                 if ( request.getParameter("prmId").matches("\\d+")
                     && request.getParameter("prmId").length() <= 11 ) {
 
-                    cat = catDAO.buscarPorId(Integer.parseInt(request.getParameter("prmId")));
-                    
-                    if (cat != null) {
+                    if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.COMPRADOR) {
 
-                        if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.COMPRADOR) {
+                        cat = catDAO.buscarPorId(Integer.parseInt(request.getParameter("prmId")));
+                        
+                        if (cat != null) {
 
                             alteracao = true;
                             cat.setId(Integer.parseInt(request.getParameter("prmId")));
 
-                        } else { throw new Exception("Apenas compradores podem alterar categorias!"); }
+                        } else { throw new Exception("Não foi possível localizar a categoria com o ID informado!"); }
 
-                    } else { throw new Exception("Não foi possível localizar a categoria com o ID informado!"); }
+                    } else { throw new Exception("Apenas compradores podem incluir ou alterar categorias!"); }
 
-                }
+                } else { throw new Exception("ID da categoria informado não é numérico!"); }
 
             }
 
@@ -235,7 +236,7 @@ public class ControllerCategorias extends HttpServlet {
         } catch (Exception e) {
 
             ServletUtils.mensagem(
-                "/ControllerCategorias?acao=listar",
+                "/Area",
                 e.getMessage(),
                 Mensagem.Tipo.ERRO,
                 request,
@@ -255,17 +256,18 @@ public class ControllerCategorias extends HttpServlet {
 
         try {
 
-            if ( request.getParameter("id") != null ) {
+            if ( request.getParameter("id") != null
+                && !request.getParameter("id").isEmpty() ) {
 
                 if ( request.getParameter("id").matches("\\d+") ) {
 
-                    int id = Integer.parseInt(request.getParameter("id"));
-                    CategoriaDAO catDAO = new CategoriaDAO();
-                    Categoria cat = catDAO.buscarPorId(id);
-                    
-                    if (cat != null) {
+                    if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.COMPRADOR) {
 
-                        if (request.getSession().getAttribute("usuarioPapel") == Funcionario.Papel.COMPRADOR) {
+                        int id = Integer.parseInt(request.getParameter("id"));
+                        CategoriaDAO catDAO = new CategoriaDAO();
+                        Categoria cat = catDAO.buscarPorId(id);
+                        
+                        if (cat != null) {
 
                             if ( catDAO.deletar(id) ) {
 
@@ -280,10 +282,10 @@ public class ControllerCategorias extends HttpServlet {
                                 );
 
                             } else { throw new Exception("Não foi possível excluir a categoria informada!"); }
-                            
-                        } else { throw new Exception("Apenas compradores podem excluir categorias!"); }
 
-                    } else { throw new Exception("Não foi possível localizar a categoria informada!"); }
+                        } else { throw new Exception("Não foi possível localizar a categoria informada!"); }
+                        
+                    } else { throw new Exception("Apenas compradores podem excluir categorias!"); }
 
                 } else { throw new Exception("ID da categoria informado não é numérico!"); }
 
@@ -301,7 +303,7 @@ public class ControllerCategorias extends HttpServlet {
         } catch (Exception e) {
 
             ServletUtils.mensagem(
-                "/ControllerCategorias?acao=listar",
+                "/Area",
                 e.getMessage(),
                 Mensagem.Tipo.ERRO,
                 request,

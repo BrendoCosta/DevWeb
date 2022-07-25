@@ -7,7 +7,7 @@ import java.sql.*;
 public class FuncionarioDAO {
 
     private static final String BUSCAR_POR_ID  = "SELECT * FROM funcionarios WHERE id = ?";
-    private static final String BUSCAR_POR_CREDENCIAIS  = "SELECT * FROM funcionarios WHERE cpf = ? and senha = ?";
+    private static final String BUSCAR_POR_CREDENCIAIS  = "SELECT * FROM funcionarios WHERE cpf = ? and senha = ? and papel = ?";
     private static final String LISTAR  = "SELECT * FROM funcionarios";
     private static final String ALTERAR = "UPDATE funcionarios SET nome = ?, cpf = ?, senha = ?, papel = ? WHERE id = ?;";
     private static final String INSERIR = "INSERT INTO funcionarios (id, nome, cpf, senha, papel) VALUES (?, ?, ?, ?, ?)";
@@ -57,13 +57,14 @@ public class FuncionarioDAO {
 
     /* ---------------------------------------------------------------------- */
 
-    public static Funcionario buscarPorCredenciais(String cpf, String senha) throws SQLException {    
+    public static Funcionario buscarPorCredenciais(String cpf, String senha, String papel) throws SQLException {    
 
         Funcionario func = null;
 
         PreparedStatement pstmt = FuncionarioDAO.conexao.prepareStatement(BUSCAR_POR_CREDENCIAIS);
             pstmt.setString(1, cpf);
             pstmt.setString(2, senha);
+            pstmt.setString(3, papel);
         ResultSet resultado = pstmt.executeQuery();
 
         if ( resultado.isBeforeFirst() && resultado.next() ) {

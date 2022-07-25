@@ -9,33 +9,7 @@
         <input type="hidden" id="prmId" name="prmId" value="<%=comp.getId()%>">
         <div class="row p-1">
             <div class="col-md-1"><label>Produto</label></div>
-            <div class="col-md-auto">
-                <select class="form-control" id="prmIdProduto" name="prmIdProduto">
-                <%
-                    ArrayList<Produto> lista = (ArrayList<Produto>) request.getAttribute("produtos");
-
-                    if (lista != null) {
-
-                        for (int i = 0; i < lista.size(); i++) {
-
-                            Produto aux = lista.get(i);
-                            %>
-                                <option value="<%= aux.getId() %>"><%= aux.getNomeProduto() %></option>
-                            <%
-                        }
-
-                    }
-                    
-                %>
-                </select>
-                <script type="text/javascript">
-                    $(document).ready(function() {
-
-                        $("#prmIdProduto option[value='<%=comp.getIdProduto()%>']").attr("selected", true);
-
-                    });
-                </script>
-            </div>
+            <div class="col-md-auto"><input type="text" class="form-control telefone" id="prmIdProduto" name="prmIdProduto" value="<%=comp.getIdProduto()%>"></div>
         </div>
         <div class="row p-1">
             <div class="col-md-1"><label>Valor da Compra</label></div>

@@ -5,26 +5,7 @@
     <form method="post" action="ControllerVendas" id="formulario">
         <div class="row p-1">
             <div class="col-md-1"><label>Produto</label></div>
-            <div class="col-md-auto">
-                <select class="form-control" id="prmIdProduto" name="prmIdProduto">
-                <%
-                    ArrayList<Produto> lista = (ArrayList<Produto>) request.getAttribute("produtosDisponiveis");
-
-                    if (lista != null) {
-
-                        for (int i = 0; i < lista.size(); i++) {
-
-                            Produto aux = lista.get(i);
-                            %>
-                                <option value="<%= aux.getId() %>"><%= aux.getNomeProduto() %></option>
-                            <%
-                        }
-
-                    }
-                    
-                %>
-                </select>
-            </div>
+            <div class="col-md-auto"><input type="text" class="form-control" id="prmIdProduto" name="prmIdProduto"></div>
         </div>
         <div class="row p-1">
             <div class="col-md-1"><label>Valor da Venda</label></div>
